@@ -2567,3 +2567,278 @@ input, textarea, select {
   align-items: center;
   justify-content: center;
 }
+
+
+
+/* =========================================== */
+/* MOBILE-FRIENDLY SCROLLING FIXES */
+/* =========================================== */
+
+/* Make body and html allow scrolling */
+html, body {
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto; /* Allow vertical scrolling */
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+}
+
+/* Make sure screens don't overflow */
+.screen {
+  min-height: 100vh;
+  width: 100%;
+  overflow-y: auto; /* Allow scrolling within each screen */
+  padding: 20px 15px 60px; /* Add bottom padding for mobile */
+  position: relative;
+}
+
+/* Specifically for cinema/materials screen */
+#materialists {
+  min-height: 100vh;
+  overflow-y: auto;
+  padding-bottom: 80px; /* Extra space for mobile bottom bar */
+}
+
+/* Popcorn game container - make it scrollable */
+#popcorn-game {
+  min-height: 100vh;
+  padding: 20px 15px 100px; /* Extra bottom padding for mobile */
+  overflow-y: visible;
+  position: relative;
+}
+
+/* Game container - stack vertically */
+#popcorn-game > * {
+  margin-bottom: 30px;
+}
+
+/* Instructions box - prevent text cutoff */
+.game-instructions-box {
+  max-height: none !important; /* Remove any height restrictions */
+  overflow: visible !important;
+  word-wrap: break-word;
+  hyphens: auto;
+}
+
+/* Visual game area - make it flexible */
+.popcorn-visual {
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  margin: 30px auto !important;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 15px;
+}
+
+/* Popcorn bowl positioning for mobile */
+.popcorn-bowl {
+  position: relative;
+  margin: 20px auto;
+}
+
+/* Signal area - ensure it's visible */
+.signal-area {
+  margin-top: 30px;
+  padding: 15px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  width: 100%;
+}
+
+/* Stats container - make it wrap properly */
+.game-stats-container {
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 15px;
+  margin: 20px 0 !important;
+}
+
+/* Individual stat boxes for mobile */
+.stat-box {
+  min-width: 100px;
+  padding: 12px 15px;
+  margin: 5px;
+}
+
+/* Game controls - stack vertically on mobile */
+.game-controls-container {
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  margin: 30px 0 !important;
+}
+
+.game-controls-container button {
+  width: 100%;
+  max-width: 280px;
+  margin: 5px 0;
+}
+
+/* Feedback message - ensure it's visible */
+.feedback-message {
+  min-height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 20px 0 !important;
+  padding: 15px;
+  text-align: center;
+}
+
+/* Ensure buttons are large enough for touch */
+.grab-btn, .romance-btn, .skip-btn, .shy-btn {
+  min-height: 50px; /* Minimum touch target size */
+  touch-action: manipulation; /* Prevent double-tap zoom on buttons */
+}
+
+/* Prevent text size adjustment on mobile */
+* {
+  -webkit-text-size-adjust: 100%; /* Prevent iOS text resize */
+  text-size-adjust: 100%;
+}
+
+/* Touch-friendly signal light */
+.signal-light {
+  width: 70px;
+  height: 70px;
+  margin: 15px auto;
+}
+
+/* =========================================== */
+/* MOBILE-ONLY ADJUSTMENTS */
+/* =========================================== */
+
+/* Small phones (iPhone SE, etc.) */
+@media (max-width: 375px) {
+  .screen {
+    padding: 15px 10px 70px;
+  }
+  
+  #popcorn-game {
+    padding: 15px 10px 90px;
+  }
+  
+  .popcorn-visual {
+    min-height: 350px;
+    margin: 20px auto !important;
+    padding: 15px;
+  }
+  
+  .signal-light {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .grab-btn {
+    padding: 15px 20px;
+    font-size: 1.1rem;
+    min-width: 200px;
+  }
+  
+  .stat-box {
+    min-width: 85px;
+    padding: 10px 12px;
+  }
+  
+  .stat-value {
+    font-size: 1.6rem;
+  }
+}
+
+/* Very small screens */
+@media (max-height: 700px) {
+  .popcorn-visual {
+    min-height: 320px;
+  }
+  
+  .popcorn-bowl {
+    margin-top: 10px;
+  }
+  
+  .signal-area {
+    margin-top: 20px;
+  }
+}
+
+/* Landscape mode on mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+  .screen {
+    padding-bottom: 50px;
+  }
+  
+  #popcorn-game {
+    padding-bottom: 70px;
+  }
+  
+  .popcorn-visual {
+    flex-direction: row;
+    min-height: 200px;
+    align-items: center;
+    gap: 20px;
+  }
+  
+  .popcorn-bowl {
+    flex: 1;
+  }
+  
+  .signal-area {
+    flex: 1;
+    margin-top: 0;
+  }
+  
+  .game-instructions-box {
+    margin-bottom: 20px !important;
+    padding: 10px;
+  }
+  
+  .game-stats-container {
+    margin: 15px 0 !important;
+  }
+}
+
+/* Fix for iOS Safari viewport issues */
+@supports (-webkit-touch-callout: none) {
+  .screen {
+    min-height: -webkit-fill-available; /* iOS fix for 100vh */
+  }
+  
+  #materialists {
+    min-height: -webkit-fill-available;
+  }
+}
+
+/* Prevent pull-to-refresh on game area */
+#popcorn-game {
+  overscroll-behavior: contain; /* Prevent pull-to-refresh inside game */
+}
+
+/* Ensure content doesn't get hidden behind mobile browser UI */
+.screen::after {
+  content: '';
+  display: block;
+  height: 80px; /* Space for mobile browser controls */
+}
+
+/* Make sure text is readable on small screens */
+.game-instructions-box p {
+  font-size: clamp(14px, 3vw, 16px); /* Responsive font size */
+  line-height: 1.5;
+}
+
+/* Ensure buttons have proper spacing */
+button {
+  margin: 8px 0;
+}
+
+/* Prevent horizontal scrolling */
+* {
+  max-width: 100%;
+}
+
+/* Fix for popup keyboards on mobile */
+@media (max-height: 500px) {
+  .screen {
+    padding-bottom: 100px; /* Extra space for keyboard */
+  }
+}
