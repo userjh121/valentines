@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Our Co-Op Run - Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="hud" class="hidden collapsed">
+  <div id="hud-header" onclick="toggleHUDCollapse()">
+    <span id="hud-toggle-icon">▼</span>
+    <div id="hud-header-info">
+      <span id="hp-label">HP:</span>
+      <span id="hp-value">100%</span>
+      <span id="hud-companion-name"></span>
+    </div>
+  </div>
+  <div id="hud-content">
+    <div id="hp-container">
+      <div id="hp-bar-outer">
+        <div id="hp-bar"></div>
+      </div>
+      <div id="companion-indicator">
+        <span>Companion:</span>
+        <span id="current-companion">None</span>
+        <img id="companion-icon" src="" alt="Companion" class="hidden">
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- SOGETI BACKSTORY -->
+<div id="sogeti" class="screen active">
+  <h1>The Place It All Began</h1>
+  <img src="assets/sogeti.png" class="story-image">
+    <!-- Story Text -->
+  <p class="story-text">
+    Two Tarnished, unknowingly summoned to the same workplace.
+    Among meetings, deadlines, and shared suffering…
+    a bond began to form.
+  </p>
+  <!-- Minecraft Chests Container -->
+  <div class="chests-container">
+
+    <!-- Chest 1: Meeting Memories -->
+    <div class="chest" id="chest1" onclick="openChest(1)">
+      <div class="chest-closed">
+        <img src="assets/chest.png" alt="Chest" class="chest-img">
+        <div class="chest-label">Boardroom Drawings</div>
+      </div>
+      <div class="chest-contents hidden">
+        <div class="chest-items">
+          <img src="assets/freddy.png" alt="Freddy" class="work-item" data-description="Freddy drawing">
+          <img src="assets/frok.jpg" alt="Frok" class="work-item" data-description="Frok drawing">
+          <img src="assets/goober.jpg" alt="Goober" class="work-item" data-description="Goober drawing">
+          <img src="assets/jeremy.jpg" alt="Jeremy" class="work-item" data-description="Jeremy drawing">
+          <img src="assets/puffle.jpg" alt="Puffle" class="work-item" data-description="Puffle drawing">
+        </div>
+        <button class="close-chest" onclick="closeChest(1)">Close Chest</button>
+      </div>
+    </div>
+    
+    <!-- Chest 2: Mugshots -->
+    <div class="chest" id="chest2" onclick="openChest(2)">
+      <div class="chest-closed">
+        <img src="assets/chest.png" alt="Chest" class="chest-img">
+        <div class="chest-label">Mugshots</div>
+      </div>
+      <div class="chest-contents hidden">
+        <div class="chest-items">
+          <img src="assets/jade.jpg" alt="Jade" class="work-item" data-description="Jade's mugshot">
+          <img src="assets/max.png" alt="Max" class="work-item" data-description="Max's mugshot">
+        </div>
+        <button class="close-chest" onclick="closeChest(2)">Close Chest</button>
+      </div>
+    </div>
+    
+    <!-- Chest 3: Office Games -->
+    <div class="chest" id="chest3" onclick="openChest(3)">
+      <div class="chest-closed">
+        <img src="assets/chest.png" alt="Chest" class="chest-img">
+        <div class="chest-label">Office Games</div>
+      </div>
+      <div class="chest-contents hidden">
+        <div class="chest-items">
+          <img src="assets/clubpenguin.png" alt="Club Penguin" class="work-item" data-description="Card-Jitsu">
+          <img src="assets/clash.png" alt="Clash" class="work-item" data-description="Clash">
+          <img src="assets/minecraft.png" alt="Minecraft" class="work-item" data-description="Minecraft">
+        </div>
+        <button class="close-chest" onclick="closeChest(3)">Close Chest</button>
+      </div>
+    </div>
+  </div>
+
+  
+  <!-- Description Display -->
+  <div id="item-description" class="description-box"></div>
+  
+  <!-- Companion Dialogue -->
+  <p id="companion-dialogue" class="highlight"></p>
+  
+  <!-- Progress Indicator -->
+  <div class="progress-indicator">
+    <span>Chests Opened: </span>
+    <span id="chests-opened">0/3</span>
+  </div>
+  
+  <!-- Continue Button (initially disabled) -->
+  <button id="continue-btn" onclick="goTo('bakery')" disabled>Continue Journey</button>
+</div>
+
+
+
+
+
+
+<!-- BAKERY LEVEL -->
+<div id="bakery" class="screen hidden">
+  <h1>The Bakery of Beginnings</h1>
+  <p>Match the pastries to share them equally! Find all pairs before time runs out.</p>
+  
+  <div id="memory-game">
+    <div class="game-header">
+      <div class="game-stats">
+        <div class="stat">
+          <span class="stat-label">Time:</span>
+          <span id="timer" class="stat-value">60</span>s
+        </div>
+        <div class="stat">
+          <span class="stat-label">Matches:</span>
+          <span id="matches">0</span>/6
+        </div>
+        <div class="stat">
+          <span class="stat-label">Moves:</span>
+          <span id="moves">0</span>
+        </div>
+      </div>
+      
+      <div class="difficulty">
+        <button onclick="setDifficulty('easy')" class="difficulty-btn active">Easy</button>
+        <button onclick="setDifficulty('medium')" class="difficulty-btn">Medium</button>
+        <button onclick="setDifficulty('hard')" class="difficulty-btn">Hard</button>
+      </div>
+    </div>
+    
+    <div class="memory-grid" id="memory-grid">
+      <!-- Cards will be generated here -->
+    </div>
+    
+    <div class="game-controls">
+      <button onclick="startGame()" id="start-btn">Start Game</button>
+      <button onclick="resetGame()" id="reset-btn" disabled>Restart</button>
+      <button onclick="hint()" id="hint-btn" disabled>
+        <i class="fas fa-lightbulb"></i> Hint (3 left)
+      </button>
+    </div>
+    
+    <div id="game-message" class="game-message"></div>
+    
+    <div class="companion-help">
+      <p id="bakery-dialogue" class="highlight"></p>
+    </div>
+  </div>
+  
+  <div id="bakery-outcome" class="hidden">
+    <h2 id="outcome-title"></h2>
+    <p id="outcome-text"></p>
+    <div class="reward-stats">
+      <p>Time Bonus: <span id="time-bonus">0</span> HP</p>
+      <p>Total Earned: <span id="total-hp">0</span> HP</p>
+    </div>
+    <button onclick="completeBakery()">Share the Pastries & Continue</button>
+  </div>
+</div>
+
+
+    
+
+<!-- CINEMA LEVEL - SIMPLIFIED POPCORN GAME -->
+<div id="materialists" class="screen hidden">
+  <h1>The Silent Theatre</h1>
+  <p>Share popcorn with perfect timing. A simple act, heavy with meaning.</p>
+  <p class="highlight">"I love you."</p>
+  
+  <div id="popcorn-game" class="hidden">
+    <!-- Game Instructions -->
+    <div class="game-instructions-box">
+      <h3>🎮 How to Play:</h3>
+      <p>When the light turns <span class="green-text">GREEN</span>, click the GRAB button!</p>
+      <p>Try to grab as soon as the light changes.</p>
+      <p><strong>Goal:</strong> Grab 5 times with good timing!</p>
+    </div>
+    
+    <!-- Visual Game Area -->
+    <div class="popcorn-visual">
+      <div class="popcorn-bowl">
+        <div class="popcorn-pieces" id="popcorn-pieces">
+          <!-- Popcorn pieces will appear here -->
+        </div>
+      </div>
+      
+      <div class="signal-area">
+        <div class="signal-light-container">
+          <div class="signal-light" id="signal-light"></div>
+          <p id="signal-text">Waiting for signal...</p>
+        </div>
+        
+        <div class="grab-button-container">
+          <button class="grab-btn" id="grab-btn" disabled>
+            🍿 GRAB POPCORN
+          </button>
+          <p class="btn-hint">Click when light turns green!</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Game Stats -->
+    <div class="game-stats-container">
+      <div class="stat-box">
+        <div class="stat-label">Round</div>
+        <div class="stat-value" id="round-counter">1/5</div>
+      </div>
+      
+      <div class="stat-box">
+        <div class="stat-label">Perfect Grabs</div>
+        <div class="stat-value" id="perfect-grabs">0</div>
+      </div>
+      
+      <div class="stat-box">
+        <div class="stat-label">Timing Score</div>
+        <div class="stat-value" id="timing-score">0%</div>
+      </div>
+    </div>
+    
+    <!-- Game Controls -->
+    <div class="game-controls-container">
+      <button onclick="startPopcornGame()" id="start-game-btn">Start Game</button>
+      <button onclick="restartPopcornGame()" id="restart-btn" class="restart-btn" disabled>🔄 Restart</button>
+      <button onclick="skipCinema()" class="skip-btn">Skip to Next</button>
+    </div>
+    
+    <!-- Feedback Message -->
+    <div class="feedback-message" id="feedback-message">
+      <p>Ready to play? Click "Start Game"!</p>
+    </div>
+  </div>
+  
+  <!-- Outcome Screen -->
+  <div id="cinema-outcome" class="hidden">
+    <h2>🍿 Sharing Complete! 🍿</h2>
+    <p id="popcorn-outcome"></p>
+    
+    <div class="result-stats">
+      <div class="stat-result">
+        <span>Perfect Grabs:</span>
+        <span id="final-perfect-grabs">0</span>
+      </div>
+      <div class="stat-result">
+        <span>Average Timing:</span>
+        <span id="final-timing-score">0%</span>
+      </div>
+      <div class="stat-result">
+        <span>HP Bonus:</span>
+        <span class="hp-bonus" id="shared-bonus">+0</span>
+      </div>
+    </div>
+    
+    <div class="outcome-controls">
+      <button onclick="goTo('zoo')">Continue to Zoo Lights</button>
+      <button onclick="restartPopcornGameFromOutcome()" class="restart-btn">🔄 Play Again</button>
+    </div>
+  </div>
+  
+  <!-- Start Screen -->
+  <div id="cinema-start" class="cinema-start">
+    <div class="start-description">
+      <p>In the dark of the cinema, sharing popcorn becomes a silent conversation.</p>
+      <p class="highlight">Can you match the perfect moment?</p>
+    </div>
+    
+    <div class="start-controls">
+      <button onclick="startPopcornGameIntro()" class="romance-btn">🍿 Share Popcorn Together</button>
+      <button onclick="skipCinema()" class="skip-btn">Skip Cinema Scene</button>
+      <button onclick="die()" class="shy-btn">😳 Too Nervous</button>
+    </div>
+  </div>
+</div>
+
+
+  <!-- ZOO LEVEL -->
+  <div id="zoo" class="screen hidden">
+    <h1>The Winter Lights of Dublin Zoo</h1>
+    <p>Lights shimmer. Cold air bites. Baileys hot chocolate restores HP.</p>
+    <button onclick="heal(30); goTo('fnaf')">Drink Baileys Hot Chocolate (+HP)</button>
+    <button onclick="damage()">Spill the cup</button>
+  </div>
+
+  <!-- FNAF LEVEL -->
+  <div id="fnaf" class="screen hidden">
+    <h1>Five Nights are Freddy Fazbears</h1>
+    <p>Animatronics lurk. Fear rises. Guess the word before fear consumes you</p>
+    <div id="wordle-grid"></div>
+    <input id="wordle-input" maxlength="5" placeholder="5 letter word">
+    <button onclick="submitGuess()">Submit</button>
+    <p id="fear-text" class="highlight"></p>
+  </div>
+
+  <!-- PIZZA CRAWL -->
+  <div id="pizza" class="screen hidden">
+    <h1>The Great Pizza Crawl</h1>
+    <p>Slice after slice. Strength restored. Spirits high.</p>
+    <button onclick="win()">Finish the journey</button>
+    <button onclick="die()">Quit early</button>
+  </div>
+
+  <!-- YOU DIED -->
+  <div id="death-screen" class="screen hidden">
+    <img src="assets/died.png">
+    <br>
+    <img src="assets/powerup.png" class="character" onclick="revive()" title="Touch grace to revive">
+    <p>Touch the grace to rise again.</p>
+    <button onclick="restart()">Return to Beginning</button>
+  </div>
+
+  <!-- VICTORY -->
+  <div id="victory" class="screen hidden">
+    <h1>Journey Complete</h1>
+    <p>Through every trial, every night, every shared moment… you made it.</p>
+    <h2>You reached me ❤️</h2>
+    <p class="highlight">Happy Valentine's Day.</p>
+  </div>
+
+  <audio id="death-audio" src="assets/you-died.mp3"></audio>
+  <audio id="bg-music" src="assets/start-song.mp3" loop></audio>
+  
+  <script src="game-script.js"></script>
+</body>
+</html>

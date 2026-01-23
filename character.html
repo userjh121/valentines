@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chosen Tarnished</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Georgia&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="screen active" id="character-screen">
+        <!-- Header Section -->
+        <div class="character-header">
+            <h1 class="character-title">CHOSEN TARNISHED</h1>
+            <div class="character-subtitle">Max the Strong</div>
+            <p class="character-description">
+                A strategic warrior reborn from the ashes of the Shattering, Max optimises synergies across all stakeholder initiatives. 
+                Formerly a noble of Lucan, now a Tarnished seeking to mend the Elden Ring and maximise shareholder value. 
+                His morning routine includes reviewing daily Excel plans, hitting the gym to maintain peak physical condition, 
+                and strategising quarterly roadmaps to align cross-functional team efforts. Known for his aggressive 
+                project planning and relentless pursuit of MVP deliverables.
+             </p>
+        </div>
+
+        <!-- Character Image -->
+        <div class="character-portrait-container">
+            <img src="assets/character.png" 
+                 alt="Max Mellett" 
+                 class="character-portrait">
+            <div class="portrait-frame"></div>
+        </div>
+
+        <!-- Card & Stats Section -->
+        <div class="card-stats-section">
+            <div class="card-stats-container">
+                <!-- FIFA Card Image (Left Side) -->
+                <div class="fifa-card-image">
+                    <img src="assets/fifa-card.png" 
+                         alt="Max FIFA Card" 
+                         class="card-image">
+                </div>
+
+                <!-- Prometheus-style Gauge Stats (Right Side) -->
+                <div class="prometheus-stats">
+                    <div class="stats-header">
+                        <div class="player-bio">
+                            <div class="overall-rating">94</div>
+                            <div class="rarity">Gold Rare</div>
+                            <span class="club">Jades Giants</span>
+                        </div>
+                        <div class="player-details">
+                            <div class="player-name">MAX MELLETT</div>
+                            <div class="player-position">STRIKER</div>
+                        </div>
+                    </div>
+
+                    <!-- Attribute Gauge Charts -->
+                    <div class="attribute-gauges">
+                        <!-- Row 1 -->
+                        <div class="gauge-row">
+                            <div class="gauge-item">
+                                <div class="gauge-container">
+                                    <div class="gauge" data-value="90">
+                                        <div class="gauge-fill"></div>
+                                        <div class="gauge-cover"></div>
+                                    </div>
+                                    <div class="gauge-label">Pace</div>
+                                    <div class="gauge-value">90</div>
+                                </div>
+                            </div>
+                            
+                            <div class="gauge-item">
+                                <div class="gauge-container">
+                                    <div class="gauge" data-value="96">
+                                        <div class="gauge-fill"></div>
+                                        <div class="gauge-cover"></div>
+                                    </div>
+                                    <div class="gauge-label">Shooting</div>
+                                    <div class="gauge-value">96</div>
+                                </div>
+                            </div>
+                            
+                            <div class="gauge-item">
+                                <div class="gauge-container">
+                                    <div class="gauge" data-value="82">
+                                        <div class="gauge-fill"></div>
+                                        <div class="gauge-cover"></div>
+                                    </div>
+                                    <div class="gauge-label">Passing</div>
+                                    <div class="gauge-value">82</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Row 2 -->
+                        <div class="gauge-row">
+                            <div class="gauge-item">
+                                <div class="gauge-container">
+                                    <div class="gauge" data-value="97">
+                                        <div class="gauge-fill"></div>
+                                        <div class="gauge-cover"></div>
+                                    </div>
+                                    <div class="gauge-label">Dribbling</div>
+                                    <div class="gauge-value">97</div>
+                                </div>
+                            </div>
+                            
+                            <div class="gauge-item">
+                                <div class="gauge-container">
+                                    <div class="gauge" data-value="89">
+                                        <div class="gauge-fill"></div>
+                                        <div class="gauge-cover"></div>
+                                    </div>
+                                    <div class="gauge-label">Defending</div>
+                                    <div class="gauge-value">89</div>
+                                </div>
+                            </div>
+                            
+                            <div class="gauge-item">
+                                <div class="gauge-container">
+                                    <div class="gauge" data-value="82">
+                                        <div class="gauge-fill"></div>
+                                        <div class="gauge-cover"></div>
+                                    </div>
+                                    <div class="gauge-label">Physicality</div>
+                                    <div class="gauge-value">82</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PlayStyles & Roles -->
+                    <div class="playstyles-section">
+                        <div class="playstyles">
+                            <h4>PLAYSTYLES</h4>
+                            <div class="playstyle-tags">
+                                <span class="playstyle-tag">Power Shot</span>
+                                <span class="playstyle-tag">Aerial Threat</span>
+                                <span class="playstyle-tag">Relentless</span>
+                            </div>
+                        </div>
+                        <div class="roles">
+                            <h4>ROLES</h4>
+                            <div class="role-tags">
+                                <span class="role-tag">Target Man</span>
+                                <span class="role-tag">Finisher</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Button -->
+        <button onclick="window.location.href='companion.html'" class="character-nav-btn">
+            <i class="fas fa-shield-alt"></i> CHOOSE YOUR COMPANION
+        </button>
+    </div>
+
+
+    <script src="script.js"></script>
+</body>
+</html>
