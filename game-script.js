@@ -174,6 +174,21 @@ function goTo(id) {
       initHeartbeatGame();
     }, 100);
   }
+
+
+  setTimeout(function() {
+        const screen = document.getElementById(id);
+        if (screen) {
+            screen.scrollTop = 0;
+            window.scrollTo(0, 0);
+        }
+        
+        // Re-initialize mobile support for new screen
+        if (id === 'materialists') {
+            setTimeout(initMobileSupport, 150);
+            setTimeout(setupTouchControls, 250);
+        }
+    }, 50);
 }
 
 function updateDialogue(screenId) {
@@ -1347,3 +1362,162 @@ function goTo(id) {
     }, 100);
   }
 }
+
+
+// ============================================
+// MOBILE SCROLLING & TOUCH SUPPORT
+// ============================================
+
+// Initialize mobile-friendly features
+function initMobileSupport() {
+    console.log("Initializing mobile support...");
+    
+    // Detect if mobile
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    if (isMobile) {
+        console.log("Mobile device detected, applying mobile optimizations");
+        applyMobileOptimizations();
+    }
+    
+    // Prevent unwanted behaviors
+    preventUnwantedBehaviors();
+    
+    // Ensure proper scrolling
+    setupSmoothScrolling();
+}
+
+// Apply mobile-specific optimizations
+function applyMobileOptimizations() {
+    // Add mobile-specific classes
+    document.body.classList.add('mobile-device');
+    
+    // Make sure game area is properly sized
+    const gameArea = document.getElementById('popcorn-game');
+    if (gameArea) {
+        gameArea.classList.add('mobile-game');
+    }
+    
+    // Adjust button sizes for touch
+    const buttons = document.querySelectorAll('button');
+    buttons.forEach(button => {
+        button.classList.add('mobile-touch-target');
+    });
+    
+    // Log viewport info for debugging
+    console.log(`Viewport: ${window.innerWidth}x${window.innerHeight}`);
+    console.log(`Device Pixel Ratio: ${window.devicePixelRatio}`);
+}
+
+// Prevent unwanted mobile behaviors
+function preventUnwantedBehaviors() {
+    // Prevent zoom on double-tap
+    document.addEventListener('dblclick', function(e) {
+        e.preventDefault();
+    }, { passive: false });
+    
+    // Prevent pull-to-refresh on game area
+    document.addEventListener('touchmove', function(e) {
+        const gameArea = document.getElementById('popcorn-game');
+        if (gameArea && gameArea.contains(e.target)) {
+            e.preventDefault();
+        }
+    }, { passive: false });
+    
+    // Prevent text selection during gameplay
+    document.addEventListener('selectstart', function(e) {
+        if (popcornGameActive) {
+            e.preventDefault();
+        }
+    });
+}
+
+// Setup smooth scrolling
+function setupSmoothScrolling() {
+    // Make sure we can scroll to see all content
+    window.addEventListener('load', function() {
+        setTimeout(scrollToTop, 100);
+    });
+    
+    // Handle orientation changes
+    window.addEventListener('orientationchange', function() {
+        setTimeout(function() {
+            scrollToTop();
+            window.scrollTo(0, 0);
+        }, 300);
+    });
+    
+    // Handle resize
+    let resizeTimeout;
+    window.addEventListener('resize', function() {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(function() {
+            scrollToTop();
+        }, 250);
+    });
+}
+
+// Scroll to top of current screen
+function scrollToTop() {
+    const currentScreen = document.querySelector('.screen.active');
+    if (currentScreen) {
+        currentScreen.scrollTop = 0;
+    }
+}
+
+// Update grab button for better touch support
+function setupTouchControls() {
+    const grabBtn = document.getElementById('grab-btn');
+    if (!grabBtn) return;
+    
+    // Remove any existing listeners
+    const newGrabBtn = grabBtn.cloneNode(true);
+    grabBtn.parentNode.replaceChild(newGrabBtn, grabBtn);
+    
+    // Add touch-friendly event listeners
+    newGrabBtn.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        this.classList.add('touch-active');
+        if (typeof handleGrabClick === 'function' && !this.disabled) {
+            handleGrabClick();
+        }
+    }, { passive: false });
+    
+    newGrabBtn.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        this.classList.remove('touch-active');
+    }, { passive: false });
+    
+    // Also keep click for desktop
+    newGrabBtn.addEventListener('click', function(e) {
+        if (!/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+            // Only handle click on non-touch devices
+            if (typeof handleGrabClick === 'function' && !this.disabled) {
+                handleGrabClick();
+            }
+        }
+    });
+}
+
+// Initialize when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    initMobileSupport();
+    
+    // Re-initialize when cinema screen is shown
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                const target = mutation.target;
+                if (target.id === 'materialists' && target.classList.contains('active')) {
+                    setTimeout(initMobileSupport, 100);
+                    setTimeout(setupTouchControls, 200);
+                }
+            }
+        });
+    });
+    
+    const materialistsScreen = document.getElementById('materialists');
+    if (materialistsScreen) {
+        observer.observe(materialistsScreen, { attributes: true });
+    }
+});
