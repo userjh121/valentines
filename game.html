@@ -227,31 +227,31 @@
         <div class="stat-label">Perfect Grabs</div>
         <div class="stat-value" id="perfect-grabs">0</div>
       </div>
-      
+
       <div class="stat-box">
         <div class="stat-label">Timing Score</div>
         <div class="stat-value" id="timing-score">0%</div>
       </div>
     </div>
-    
+
     <!-- Game Controls -->
     <div class="game-controls-container">
       <button onclick="startPopcornGame()" id="start-game-btn">Start Game</button>
       <button onclick="restartPopcornGame()" id="restart-btn" class="restart-btn" disabled>🔄 Restart</button>
       <button onclick="skipCinema()" class="skip-btn">Skip to Next</button>
     </div>
-    
+
     <!-- Feedback Message -->
     <div class="feedback-message" id="feedback-message">
       <p>Ready to play? Click "Start Game"!</p>
     </div>
   </div>
-  
+
   <!-- Outcome Screen -->
   <div id="cinema-outcome" class="hidden">
     <h2>🍿 Sharing Complete! 🍿</h2>
     <p id="popcorn-outcome"></p>
-    
+
     <div class="result-stats">
       <div class="stat-result">
         <span>Perfect Grabs:</span>
@@ -266,20 +266,20 @@
         <span class="hp-bonus" id="shared-bonus">+0</span>
       </div>
     </div>
-    
+
     <div class="outcome-controls">
       <button onclick="goTo('zoo')">Continue to Zoo Lights</button>
       <button onclick="restartPopcornGameFromOutcome()" class="restart-btn">🔄 Play Again</button>
     </div>
   </div>
-  
+
   <!-- Start Screen -->
   <div id="cinema-start" class="cinema-start">
     <div class="start-description">
       <p>In the dark of the cinema, sharing popcorn becomes a silent conversation.</p>
       <p class="highlight">Can you match the perfect moment?</p>
     </div>
-    
+
     <div class="start-controls">
       <button onclick="startPopcornGameIntro()" class="romance-btn">🍿 Share Popcorn Together</button>
       <button onclick="skipCinema()" class="skip-btn">Skip Cinema Scene</button>
@@ -289,13 +289,166 @@
 </div>
 
 
-  <!-- ZOO LEVEL -->
-  <div id="zoo" class="screen hidden">
-    <h1>The Winter Lights of Dublin Zoo</h1>
-    <p>Lights shimmer. Cold air bites. Baileys hot chocolate restores HP.</p>
-    <button onclick="heal(30); goTo('fnaf')">Drink Baileys Hot Chocolate (+HP)</button>
-    <button onclick="damage()">Spill the cup</button>
+
+
+
+
+
+
+
+
+
+
+<!-- ZOO LEVEL - LIGHT TRAIL -->
+<div id="zoo" class="screen hidden">
+  <h1>The Winter Lights of Dublin Zoo</h1>
+  <p>Trace the light patterns in the frosty air. Create beauty together.</p>
+  
+  <div id="trail-game" class="hidden">
+    <div class="game-container">
+      <!-- PATTERN SELECTION - MOVED TO TOP -->
+      <div class="pattern-selection">
+        <h3>Choose a Light Pattern:</h3>
+        <div class="pattern-options" id="pattern-options">
+          <button class="pattern-btn" data-pattern="star" onclick="selectPattern('star')">
+            <span class="pattern-icon">⭐</span>
+            <span class="pattern-label">Star</span>
+          </button>
+          <button class="pattern-btn" data-pattern="heart" onclick="selectPattern('heart')">
+            <span class="pattern-icon">❤️</span>
+            <span class="pattern-label">Heart</span>
+          </button>
+          <button class="pattern-btn" data-pattern="spiral" onclick="selectPattern('spiral')">
+            <span class="pattern-icon">🌀</span>
+            <span class="pattern-label">Spiral</span>
+          </button>
+          <button class="pattern-btn" data-pattern="snowflake" onclick="selectPattern('snowflake')">
+            <span class="pattern-icon">❄️</span>
+            <span class="pattern-label">Snowflake</span>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Pattern Preview -->
+      <div class="pattern-preview-container">
+        <div class="preview-box">
+          <h3>Target Pattern:</h3>
+          <div class="pattern-preview" id="pattern-preview">
+            <!-- Pattern will appear here -->
+          </div>
+          <p id="pattern-name">⭐ Star Pattern</p>
+        </div>
+      </div>
+      
+      <!-- Drawing Area -->
+      <div class="drawing-container">
+        <div class="drawing-instructions">
+          <p id="draw-instructions">Trace the pattern in the air with your finger!</p>
+          <div class="mobile-hint">👆 Draw on the canvas below</div>
+        </div>
+        
+        <div class="drawing-area">
+          <canvas id="light-canvas"></canvas>
+          <div class="canvas-overlay" id="canvas-overlay">
+            <!-- Guide pattern will show here -->
+          </div>
+          <div class="canvas-frame"></div>
+        </div>
+        
+        <!-- Touch Controls for Mobile -->
+        <div class="mobile-controls">
+          <button class="mobile-btn" onclick="undoLastStroke()" id="undo-btn">↶ Undo</button>
+          <button class="mobile-btn" onclick="clearDrawing()" id="clear-btn">🗑️ Clear</button>
+          <button class="mobile-btn" onclick="toggleGuide()" id="guide-btn">👁️ Show Guide</button>
+        </div>
+      </div>
+      
+      <!-- Accuracy Display -->
+      <div class="accuracy-display">
+        <div class="accuracy-item">
+          <div class="accuracy-label">Pattern Accuracy:</div>
+          <div class="accuracy-value" id="accuracy-value">0%</div>
+        </div>
+        <div class="accuracy-bar-container">
+          <div class="accuracy-bar">
+            <div class="accuracy-fill" id="accuracy-fill"></div>
+          </div>
+          <div class="accuracy-milestones">
+            <span class="milestone">Poor</span>
+            <span class="milestone">Good</span>
+            <span class="milestone">Great</span>
+            <span class="milestone">Perfect!</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Game Controls -->
+      <div class="game-controls">
+        <button onclick="startTrailGame()" id="start-game-btn"> Begin Light Drawing</button>
+        <button onclick="checkDrawing()" id="check-btn" disabled>✨ Check My Pattern</button>
+      </div>
+      
+      <!-- Companion Dialogue -->
+      <div class="zoo-companion">
+        <p id="trail-dialogue">"Your hands are cold... let me warm them while you draw."</p>
+      </div>
+    </div>
   </div>
+  
+  <!-- Outcome Screen -->
+  <div id="zoo-outcome" class="hidden">
+    <div class="outcome-content">
+      <h2>✨ Light Trail Complete ✨</h2>
+      
+      <div class="result-display">
+        <div class="final-pattern" id="final-pattern-display">
+          <!-- Final pattern will be shown here -->
+        </div>
+        
+        <div class="result-stats">
+          <div class="stat-item">
+            <span class="stat-label">Pattern Accuracy:</span>
+            <span class="stat-value" id="final-accuracy">0%</span>
+          </div>
+          <div class="stat-item highlight">
+            <span class="stat-label">Hot Chocolate Bonus:</span>
+            <span class="stat-value" id="chocolate-bonus">+0 HP</span>
+          </div>
+        </div>
+        
+        <p id="light-outcome" class="outcome-text">
+          The lights shimmer in appreciation of your drawing...
+        </p>
+      </div>
+      
+      <div class="outcome-controls">
+        <button onclick="goTo('fnaf')" class="continue-btn">Continue to FNAF</button>
+        <!-- REMOVED: Draw Another Pattern button -->
+        <button onclick="justGetChocolate()" class="skip-btn">☕ Just Get Hot Chocolate</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Start Screen -->
+  <div id="zoo-start" class="zoo-start">
+    <div class="zoo-description">
+      <p>The air is crisp, the lights dance through the trees like frozen fireflies.</p>
+      <p class="highlight">Trace patterns in the cold air with your companion...</p>
+    </div>
+    
+    <div class="zoo-choices">
+      <button onclick="startZooGame()" class="romance-btn">✨ Trace Light Patterns</button>
+      <button onclick="skipToChocolate()" class="skip-btn">☕ Skip to Hot Chocolate</button>
+      <button onclick="getTooCold()" class="shy-btn">❄️ Get Too Cold (-20 HP)</button>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
 
   <!-- FNAF LEVEL -->
   <div id="fnaf" class="screen hidden">
@@ -334,7 +487,7 @@
 
   <audio id="death-audio" src="assets/you-died.mp3"></audio>
   <audio id="bg-music" src="assets/start-song.mp3" loop></audio>
-  
+
   <script src="game-script.js"></script>
 </body>
 </html>
