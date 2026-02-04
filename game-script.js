@@ -1521,3 +1521,941 @@ document.addEventListener('DOMContentLoaded', function() {
         observer.observe(materialistsScreen, { attributes: true });
     }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ============================================
+// LIGHT TRAIL GAME - ZOO LEVEL
+// ============================================
+
+// Game Variables
+let trailGameActive = false;
+let canvas, ctx;
+let isDrawing = false;
+let lastX = 0;
+let lastY = 0;
+let currentPattern = 'star';
+let currentPath = [];
+let allPaths = [];
+let guideVisible = false;
+let gameStarted = false;
+let currentAccuracy = 0;
+let currentWarmth = 50; // Starts at 50%
+
+// Pattern Definitions
+const patterns = {
+  star: {
+    name: "Star",
+    icon: "⭐",
+    points: [
+      {x: 200, y: 50},
+      {x: 240, y: 180},
+      {x: 380, y: 180},
+      {x: 260, y: 260},
+      {x: 300, y: 390},
+      {x: 200, y: 300},
+      {x: 100, y: 390},
+      {x: 140, y: 260},
+      {x: 20, y: 180},
+      {x: 160, y: 180},
+      {x: 200, y: 50}
+    ],
+    difficulty: 1.2
+  },
+  heart: {
+    name: "Heart",
+    icon: "❤️",
+    points: [
+      {x: 200, y: 100},
+      {x: 260, y: 50},
+      {x: 320, y: 100},
+      {x: 320, y: 180},
+      {x: 200, y: 320},
+      {x: 80, y: 180},
+      {x: 80, y: 100},
+      {x: 140, y: 50},
+      {x: 200, y: 100}
+    ],
+    difficulty: 1.5
+  },
+  spiral: {
+    name: "Spiral",
+    icon: "🌀",
+    points: [],
+    difficulty: 1.8
+  },
+  snowflake: {
+    name: "Snowflake",
+    icon: "❄️",
+    points: [],
+    difficulty: 2.0
+  }
+};
+
+// Initialize the game
+function initTrailGame() {
+    console.log("Initializing Light Trail game...");
+    
+    // Get canvas and context
+    canvas = document.getElementById('light-canvas');
+    ctx = canvas.getContext('2d');
+    
+    // Set canvas size (adjust for mobile)
+    const container = canvas.parentElement;
+    if (container) {
+        const rect = container.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+    } else {
+        canvas.width = 400;
+        canvas.height = 400;
+    }
+    
+    // Set up event listeners for drawing
+    setupDrawingEvents();
+    
+    // Initialize pattern
+    generatePatternPoints();
+    selectPattern('star');
+    
+    // Reset game state
+    resetDrawing();
+    
+    console.log("Light Trail game initialized");
+}
+
+// Set up drawing event listeners
+function setupDrawingEvents() {
+    if (!canvas) return;
+    
+    // Clear existing listeners
+    canvas.removeEventListener('mousedown', startDrawingMouse);
+    canvas.removeEventListener('mousemove', drawMouse);
+    canvas.removeEventListener('mouseup', stopDrawingMouse);
+    canvas.removeEventListener('mouseleave', stopDrawingMouse);
+    
+    canvas.removeEventListener('touchstart', startDrawingTouch);
+    canvas.removeEventListener('touchmove', drawTouch);
+    canvas.removeEventListener('touchend', stopDrawingTouch);
+    
+    // Mouse events
+    canvas.addEventListener('mousedown', startDrawingMouse);
+    canvas.addEventListener('mousemove', drawMouse);
+    canvas.addEventListener('mouseup', stopDrawingMouse);
+    canvas.addEventListener('mouseleave', stopDrawingMouse);
+    
+    // Touch events
+    canvas.addEventListener('touchstart', startDrawingTouch, { passive: false });
+    canvas.addEventListener('touchmove', drawTouch, { passive: false });
+    canvas.addEventListener('touchend', stopDrawingTouch);
+    
+    // Prevent default touch behaviors
+    canvas.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
+    canvas.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+}
+
+// Generate pattern points for spiral and snowflake
+function generatePatternPoints() {
+    // Generate spiral points
+    const spiralPoints = [];
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const maxRadius = Math.min(canvas.width, canvas.height) * 0.4;
+    
+    for (let i = 0; i < 720; i += 5) {
+        const angle = i * (Math.PI / 180);
+        const radius = maxRadius * (i / 720);
+        spiralPoints.push({
+            x: centerX + radius * Math.cos(angle),
+            y: centerY + radius * Math.sin(angle)
+        });
+    }
+    patterns.spiral.points = spiralPoints;
+    
+    // Generate snowflake points
+    const snowflakePoints = [];
+    const radius = maxRadius * 0.8;
+    const branches = 6;
+    
+    for (let i = 0; i < 360; i += 30) {
+        const angle = i * (Math.PI / 180);
+        snowflakePoints.push({
+            x: centerX,
+            y: centerY
+        });
+        snowflakePoints.push({
+            x: centerX + radius * Math.cos(angle),
+            y: centerY + radius * Math.sin(angle)
+        });
+        snowflakePoints.push({
+            x: centerX + radius * 0.6 * Math.cos(angle + 0.3),
+            y: centerY + radius * 0.6 * Math.sin(angle + 0.3)
+        });
+        snowflakePoints.push({
+            x: centerX + radius * 0.6 * Math.cos(angle - 0.3),
+            y: centerY + radius * 0.6 * Math.sin(angle - 0.3)
+        });
+    }
+    patterns.snowflake.points = snowflakePoints;
+}
+
+// Start Zoo Game
+function startZooGame() {
+    console.log("Starting Zoo game...");
+    const startScreen = document.getElementById('zoo-start');
+    const trailGame = document.getElementById('trail-game');
+    
+    if (startScreen) startScreen.classList.add('hidden');
+    if (trailGame) trailGame.classList.remove('hidden');
+    
+    // Initialize the game
+    setTimeout(initTrailGame, 100);
+    
+    // Update dialogue
+    updateTrailDialogue("Trace the pattern in the frosty air... I'll watch your hands.");
+}
+
+// Start the actual drawing game
+function startTrailGame() {
+    if (trailGameActive) return;
+    
+    console.log("Starting Light Trail drawing...");
+    trailGameActive = true;
+    gameStarted = true;
+    
+    // Update UI
+    const startBtn = document.getElementById('start-game-btn');
+    if (startBtn) {
+        startBtn.disabled = true;
+        startBtn.style.opacity = '0.5';
+        startBtn.style.cursor = 'not-allowed';
+    }
+    document.getElementById('check-btn').disabled = false;
+    
+    // Clear canvas
+    clearCanvas();
+    
+    // Draw guide if enabled
+    if (guideVisible) {
+        drawGuidePattern();
+    }
+    
+    // Update instructions
+    document.getElementById('draw-instructions').textContent = "Trace the pattern! Take your time...";
+    
+    // Update dialogue
+    updateTrailDialogue("Beautiful... your lines are like light itself.");
+}
+
+// Select a pattern
+function selectPattern(pattern) {
+    if (!patterns[pattern]) return;
+    
+    currentPattern = pattern;
+    const patternInfo = patterns[pattern];
+    
+    // Update UI
+    document.getElementById('pattern-name').textContent = `${patternInfo.icon} ${patternInfo.name} Pattern`;
+    
+    // Update active button
+    document.querySelectorAll('.pattern-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.querySelector(`[data-pattern="${pattern}"]`).classList.add('active');
+    
+    // Draw preview
+    drawPatternPreview(pattern);
+    
+    // Reset drawing if game is active
+    if (trailGameActive) {
+        resetDrawing();
+    }
+    
+    console.log(`Selected pattern: ${pattern}`);
+}
+
+// Draw pattern preview
+function drawPatternPreview(pattern) {
+    const preview = document.getElementById('pattern-preview');
+    if (!preview) return;
+    
+    const patternInfo = patterns[pattern];
+    
+    // Clear preview
+    preview.innerHTML = '';
+    
+    // Create SVG
+    const svgNS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(svgNS, "svg");
+    svg.setAttribute("viewBox", "0 0 400 400");
+    svg.setAttribute("width", "120");
+    svg.setAttribute("height", "120");
+    
+    // Create path
+    const path = document.createElementNS(svgNS, "path");
+    let pathData = '';
+    
+    patternInfo.points.forEach((point, index) => {
+        if (index === 0) {
+            pathData += `M ${point.x} ${point.y}`;
+        } else {
+            pathData += ` L ${point.x} ${point.y}`;
+        }
+    });
+    
+    // Close the path if it's not a spiral
+    if (pattern !== 'spiral') {
+        pathData += ' Z';
+    }
+    
+    path.setAttribute("d", pathData);
+    path.setAttribute("fill", "none");
+    path.setAttribute("stroke", "#87CEEB");
+    path.setAttribute("stroke-width", "3");
+    path.setAttribute("stroke-linecap", "round");
+    path.setAttribute("stroke-linejoin", "round");
+    
+    svg.appendChild(path);
+    preview.appendChild(svg);
+}
+
+// Draw guide pattern on canvas
+function drawGuidePattern() {
+    if (!ctx || !patterns[currentPattern]) return;
+    
+    const pattern = patterns[currentPattern];
+    ctx.save();
+    ctx.beginPath();
+    
+    pattern.points.forEach((point, index) => {
+        const scaledX = point.x * (canvas.width / 400);
+        const scaledY = point.y * (canvas.height / 400);
+        
+        if (index === 0) {
+            ctx.moveTo(scaledX, scaledY);
+        } else {
+            ctx.lineTo(scaledX, scaledY);
+        }
+    });
+    
+    if (currentPattern !== 'spiral') {
+        ctx.closePath();
+    }
+    
+    ctx.strokeStyle = 'rgba(135, 206, 235, 0.3)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.restore();
+}
+
+// Toggle guide visibility
+function toggleGuide() {
+    guideVisible = !guideVisible;
+    const guideBtn = document.getElementById('guide-btn');
+    
+    if (guideVisible) {
+        guideBtn.textContent = '👁️ Hide Guide';
+        guideBtn.style.backgroundColor = 'rgba(135, 206, 235, 0.2)';
+        if (ctx) {
+            clearCanvas();
+            drawGuidePattern();
+            redrawUserPaths();
+        }
+    } else {
+        guideBtn.textContent = '👁️ Show Guide';
+        guideBtn.style.backgroundColor = '';
+        if (ctx) {
+            clearCanvas();
+            redrawUserPaths();
+        }
+    }
+}
+
+// Mouse drawing functions
+function startDrawingMouse(e) {
+    if (!trailGameActive || !gameStarted) return;
+    
+    const rect = canvas.getBoundingClientRect();
+    lastX = e.clientX - rect.left;
+    lastY = e.clientY - rect.top;
+    isDrawing = true;
+    
+    currentPath = [{x: lastX, y: lastY}];
+    allPaths.push(currentPath);
+    
+    ctx.beginPath();
+    ctx.moveTo(lastX, lastY);
+}
+
+function drawMouse(e) {
+    if (!isDrawing) return;
+    
+    const rect = canvas.getBoundingClientRect();
+    const currentX = e.clientX - rect.left;
+    const currentY = e.clientY - rect.top;
+    
+    drawLine(lastX, lastY, currentX, currentY);
+    
+    lastX = currentX;
+    lastY = currentY;
+    currentPath.push({x: currentX, y: currentY});
+    
+    // Increase warmth slightly while drawing
+    if (currentWarmth < 100) {
+        currentWarmth = Math.min(100, currentWarmth + 0.1);
+        updateWarmthDisplay();
+    }
+}
+
+function stopDrawingMouse() {
+    if (!isDrawing) return;
+    
+    isDrawing = false;
+    ctx.closePath();
+    
+    // Decrease warmth slightly when stopping
+    currentWarmth = Math.max(50, currentWarmth - 0.5);
+    updateWarmthDisplay();
+}
+
+// Touch drawing functions
+function startDrawingTouch(e) {
+    if (!trailGameActive || !gameStarted) return;
+    
+    e.preventDefault();
+    const touch = e.touches[0];
+    const rect = canvas.getBoundingClientRect();
+    
+    lastX = touch.clientX - rect.left;
+    lastY = touch.clientY - rect.top;
+    isDrawing = true;
+    
+    currentPath = [{x: lastX, y: lastY}];
+    allPaths.push(currentPath);
+    
+    ctx.beginPath();
+    ctx.moveTo(lastX, lastY);
+}
+
+function drawTouch(e) {
+    if (!isDrawing) return;
+    
+    e.preventDefault();
+    const touch = e.touches[0];
+    const rect = canvas.getBoundingClientRect();
+    
+    const currentX = touch.clientX - rect.left;
+    const currentY = touch.clientY - rect.top;
+    
+    drawLine(lastX, lastY, currentX, currentY);
+    
+    lastX = currentX;
+    lastY = currentY;
+    currentPath.push({x: currentX, y: currentY});
+    
+    // Increase warmth slightly while drawing
+    if (currentWarmth < 100) {
+        currentWarmth = Math.min(100, currentWarmth + 0.1);
+        updateWarmthDisplay();
+    }
+}
+
+function stopDrawingTouch() {
+    if (!isDrawing) return;
+    
+    isDrawing = false;
+    ctx.closePath();
+    
+    // Decrease warmth slightly when stopping
+    currentWarmth = Math.max(50, currentWarmth - 0.5);
+    updateWarmthDisplay();
+}
+
+// Draw a line between points
+function drawLine(x1, y1, x2, y2) {
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = `rgba(135, 206, 235, ${0.7 + Math.random() * 0.3})`;
+    
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+    
+    // Add a glow effect
+    ctx.shadowColor = 'rgba(135, 206, 235, 0.8)';
+    ctx.shadowBlur = 10;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+}
+
+// Clear canvas
+function clearCanvas() {
+    if (!ctx) return;
+    
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw a dark background
+    ctx.fillStyle = 'rgba(5, 15, 30, 0.9)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw grid lines
+    drawGrid();
+    
+    // Redraw guide if visible
+    if (guideVisible) {
+        drawGuidePattern();
+    }
+}
+
+// Draw grid for reference
+function drawGrid() {
+    ctx.strokeStyle = 'rgba(135, 206, 235, 0.1)';
+    ctx.lineWidth = 1;
+    
+    // Vertical lines
+    for (let x = 0; x <= canvas.width; x += 50) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, canvas.height);
+        ctx.stroke();
+    }
+    
+    // Horizontal lines
+    for (let y = 0; y <= canvas.height; y += 50) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.stroke();
+    }
+}
+
+// Redraw all user paths
+function redrawUserPaths() {
+    if (!ctx || allPaths.length === 0) return;
+    
+    allPaths.forEach(path => {
+        if (path.length < 2) return;
+        
+        ctx.beginPath();
+        ctx.moveTo(path[0].x, path[0].y);
+        
+        for (let i = 1; i < path.length; i++) {
+            ctx.lineTo(path[i].x, path[i].y);
+        }
+        
+        ctx.lineWidth = 3;
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = 'rgba(135, 206, 235, 0.8)';
+        ctx.stroke();
+        
+        // Glow effect
+        ctx.shadowColor = 'rgba(135, 206, 235, 0.5)';
+        ctx.shadowBlur = 8;
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+    });
+}
+
+// Undo last stroke
+function undoLastStroke() {
+    if (allPaths.length === 0) return;
+    
+    allPaths.pop();
+    clearCanvas();
+    redrawUserPaths();
+    
+    // Update dialogue
+    updateTrailDialogue("That's okay... try again.");
+}
+
+// Clear drawing
+function clearDrawing() {
+    allPaths = [];
+    currentPath = [];
+    clearCanvas();
+    
+    // Update dialogue
+    updateTrailDialogue("Fresh start... I believe in you.");
+}
+
+// Check drawing accuracy
+function checkDrawing() {
+    if (allPaths.length === 0) {
+        updateTrailDialogue("You haven't drawn anything yet!");
+        return;
+    }
+    
+    console.log("Checking drawing accuracy...");
+    
+    // Calculate accuracy
+    const accuracy = calculateAccuracy();
+    currentAccuracy = accuracy;
+    
+    // Update display
+    updateAccuracyDisplay(accuracy);
+    
+    // Calculate warmth gain based on accuracy
+    const warmthGain = Math.floor(accuracy / 10);
+    currentWarmth = Math.min(100, currentWarmth + warmthGain);
+    updateWarmthDisplay();
+    
+    // Update dialogue based on accuracy
+    if (accuracy >= 80) {
+        updateTrailDialogue("Perfect! The lights seem to dance in approval.");
+    } else if (accuracy >= 60) {
+        updateTrailDialogue("Very good! You captured the essence beautifully.");
+    } else if (accuracy >= 40) {
+        updateTrailDialogue("Not bad! With practice, you'll get even better.");
+    } else {
+        updateTrailDialogue("A good attempt! The pattern was quite challenging.");
+    }
+    
+    // Enable continue to outcome
+    setTimeout(() => {
+        document.getElementById('check-btn').textContent = "✨ See Results";
+        document.getElementById('check-btn').onclick = finishTrailGame;
+    }, 1000);
+}
+
+// Calculate accuracy - FIXED VERSION
+function calculateAccuracy() {
+    const pattern = patterns[currentPattern];
+    const patternPoints = pattern.points;
+    
+    if (patternPoints.length === 0 || allPaths.length === 0) return 0;
+    
+    // Flatten all user paths into single array
+    let userPoints = [];
+    allPaths.forEach(path => {
+        userPoints = userPoints.concat(path);
+    });
+    
+    if (userPoints.length < 10) return 15; // Too few points drawn
+    
+    // Scale pattern points to canvas size
+    const scaleX = canvas.width / 400;
+    const scaleY = canvas.height / 400;
+    const scaledPattern = patternPoints.map(p => ({
+        x: p.x * scaleX,
+        y: p.y * scaleY
+    }));
+    
+    // Calculate average distance from user points to nearest pattern points
+    let totalDistance = 0;
+    let checkedPoints = Math.min(userPoints.length, 100); // Sample up to 100 points
+    let step = Math.max(1, Math.floor(userPoints.length / checkedPoints));
+    
+    for (let i = 0; i < userPoints.length; i += step) {
+        const userPoint = userPoints[i];
+        
+        // Find nearest pattern point
+        let minDist = Infinity;
+        for (let j = 0; j < scaledPattern.length; j++) {
+            const patternPoint = scaledPattern[j];
+            const dx = userPoint.x - patternPoint.x;
+            const dy = userPoint.y - patternPoint.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            
+            if (dist < minDist) {
+                minDist = dist;
+            }
+        }
+        
+        totalDistance += minDist;
+    }
+    
+    const avgDistance = totalDistance / checkedPoints;
+    
+    // Calculate accuracy based on average distance
+    // Closer = higher accuracy
+    const maxAllowedDistance = Math.min(canvas.width, canvas.height) * 0.3;
+    let accuracy = Math.max(0, 100 - (avgDistance / maxAllowedDistance) * 100);
+    
+    // Apply pattern difficulty multiplier
+    accuracy = accuracy / pattern.difficulty;
+    
+    // Add small bonus if they drew enough points
+    if (userPoints.length > patternPoints.length * 0.5) {
+        accuracy += 10;
+    }
+    
+    // Cap between 0-95
+    accuracy = Math.max(0, Math.min(95, accuracy));
+    
+    return Math.round(accuracy);
+}
+
+// Update accuracy display
+function updateAccuracyDisplay(accuracy) {
+    const accuracyValue = document.getElementById('accuracy-value');
+    const accuracyFill = document.getElementById('accuracy-fill');
+    
+    if (accuracyValue) accuracyValue.textContent = `${accuracy}%`;
+    if (accuracyFill) accuracyFill.style.width = `${accuracy}%`;
+    
+    // Color based on accuracy
+    if (accuracy >= 80) {
+        accuracyFill.style.background = 'linear-gradient(90deg, #F44336, #FF9800, #4CAF50)';
+    } else if (accuracy >= 60) {
+        accuracyFill.style.background = 'linear-gradient(90deg, #F44336, #FF9800)';
+    } else {
+        accuracyFill.style.background = '#F44336';
+    }
+}
+
+// Update warmth display
+function updateWarmthDisplay() {
+    const warmthValue = document.getElementById('warmth-value');
+    if (warmthValue) {
+        warmthValue.textContent = `${Math.round(currentWarmth)}%`;
+        
+        // Color based on warmth
+        if (currentWarmth >= 80) {
+            warmthValue.style.color = '#FF9800';
+        } else if (currentWarmth >= 60) {
+            warmthValue.style.color = '#FFB74D';
+        } else {
+            warmthValue.style.color = '#87CEEB';
+        }
+    }
+}
+
+// Finish game and show outcome
+function finishTrailGame() {
+    console.log("Finishing Light Trail game...");
+    
+    // Calculate final HP bonus
+    const accuracyBonus = Math.floor(currentAccuracy / 4); // Up to 25 HP
+    const warmthBonus = Math.floor(currentWarmth / 4); // Up to 25 HP
+    const totalBonus = accuracyBonus + warmthBonus;
+    
+    // Show outcome screen
+    const trailGame = document.getElementById('trail-game');
+    const outcomeScreen = document.getElementById('zoo-outcome');
+    
+    if (trailGame) trailGame.classList.add('hidden');
+    if (outcomeScreen) outcomeScreen.classList.remove('hidden');
+    
+    // Update outcome display
+    document.getElementById('final-accuracy').textContent = `${currentAccuracy}%`;
+    document.getElementById('final-warmth').textContent = `+${Math.round(currentWarmth - 50)}%`;
+    document.getElementById('chocolate-bonus').textContent = `+${totalBonus} HP`;
+    
+    // Update outcome text
+    const outcomeText = document.getElementById('light-outcome');
+    if (outcomeText) {
+        if (currentAccuracy >= 80 && currentWarmth >= 80) {
+            outcomeText.textContent = "Your drawing was perfect! The lights shimmered in perfect sync with your movements. Your companion's hand finds yours, warmer than any fire.";
+        } else if (currentAccuracy >= 60) {
+            outcomeText.textContent = "A beautiful attempt! The lights twinkled in appreciation. Your shared warmth makes the cold night feel cozy.";
+        } else {
+            outcomeText.textContent = "The effort was what mattered most. In the shared laughter over wobbly lines, you found more warmth than any perfect drawing could provide.";
+        }
+    }
+    
+    // Draw final pattern in outcome
+    drawFinalPattern();
+    
+    // Award HP
+    heal(totalBonus);
+    
+    console.log(`Game completed. Accuracy: ${currentAccuracy}%, Warmth: ${currentWarmth}%, HP Bonus: ${totalBonus}`);
+}
+
+// Draw final pattern in outcome screen
+function drawFinalPattern() {
+    const finalPattern = document.getElementById('final-pattern-display');
+    if (!finalPattern) return;
+    
+    finalPattern.innerHTML = '';
+    
+    // Create SVG
+    const svgNS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(svgNS, "svg");
+    svg.setAttribute("viewBox", "0 0 400 400");
+    svg.setAttribute("width", "200");
+    svg.setAttribute("height", "200");
+    
+    // Draw target pattern
+    const targetPath = document.createElementNS(svgNS, "path");
+    const pattern = patterns[currentPattern];
+    let pathData = '';
+    
+    pattern.points.forEach((point, index) => {
+        if (index === 0) {
+            pathData += `M ${point.x} ${point.y}`;
+        } else {
+            pathData += ` L ${point.x} ${point.y}`;
+        }
+    });
+    
+    if (currentPattern !== 'spiral') {
+        pathData += ' Z';
+    }
+    
+    targetPath.setAttribute("d", pathData);
+    targetPath.setAttribute("fill", "none");
+    targetPath.setAttribute("stroke", "rgba(135, 206, 235, 0.3)");
+    targetPath.setAttribute("stroke-width", "3");
+    targetPath.setAttribute("stroke-linecap", "round");
+    targetPath.setAttribute("stroke-linejoin", "round");
+    
+    svg.appendChild(targetPath);
+    
+    // Draw user's path (simplified)
+    const userPath = document.createElementNS(svgNS, "path");
+    if (allPaths.length > 0 && allPaths[0].length > 0) {
+        let userPathData = `M ${allPaths[0][0].x * (400/canvas.width)} ${allPaths[0][0].y * (400/canvas.height)}`;
+        
+        allPaths.forEach(path => {
+            path.forEach((point, index) => {
+                if (index > 0) {
+                    userPathData += ` L ${point.x * (400/canvas.width)} ${point.y * (400/canvas.height)}`;
+                }
+            });
+        });
+        
+        userPath.setAttribute("d", userPathData);
+        userPath.setAttribute("fill", "none");
+        userPath.setAttribute("stroke", "#87CEEB");
+        userPath.setAttribute("stroke-width", "2");
+        userPath.setAttribute("stroke-linecap", "round");
+        svg.appendChild(userPath);
+    }
+    
+    finalPattern.appendChild(svg);
+}
+
+// Update trail dialogue
+function updateTrailDialogue(text) {
+    const dialogue = document.getElementById('trail-dialogue');
+    if (dialogue) {
+        dialogue.textContent = `"${text}"`;
+    }
+}
+
+// Reset drawing state
+function resetDrawing() {
+    allPaths = [];
+    currentPath = [];
+    currentAccuracy = 0;
+    currentWarmth = 50;
+    
+    updateAccuracyDisplay(0);
+    updateWarmthDisplay();
+    clearCanvas();
+    
+    document.getElementById('check-btn').disabled = true;
+    document.getElementById('check-btn').textContent = "✨ Check My Pattern";
+    document.getElementById('check-btn').onclick = checkDrawing;
+}
+
+// Replay game - REMOVED (no longer used)
+// function replayTrailGame() {
+//     const outcomeScreen = document.getElementById('zoo-outcome');
+//     const trailGame = document.getElementById('trail-game');
+//     
+//     if (outcomeScreen) outcomeScreen.classList.add('hidden');
+//     if (trailGame) trailGame.classList.remove('hidden');
+//     
+//     restartDrawing();
+//     startTrailGame();
+// }
+
+// Skip to chocolate
+function skipToChocolate() {
+    console.log("Skipping to hot chocolate...");
+    const startScreen = document.getElementById('zoo-start');
+    const outcomeScreen = document.getElementById('zoo-outcome');
+    
+    if (startScreen) startScreen.classList.add('hidden');
+    if (outcomeScreen) outcomeScreen.classList.remove('hidden');
+    
+    // Give minimal bonus
+    heal(15);
+    
+    // Update outcome for skip
+    document.getElementById('final-accuracy').textContent = "Skipped";
+    document.getElementById('final-warmth').textContent = "+0%";
+    document.getElementById('chocolate-bonus').textContent = "+15 HP";
+    
+    document.getElementById('light-outcome').textContent = 
+        "Sometimes the warmest moments don't need perfect patterns. The simple act of being together, hot chocolates in hand, says everything that needs to be said.";
+}
+
+// Just get chocolate
+function justGetChocolate() {
+    heal(30);
+    goTo('fnaf');
+}
+
+// Get too cold
+function getTooCold() {
+    damage(20);
+    goTo('fnaf');
+}
+
+// Update goTo function for zoo level
+function goTo(id) {
+    lastScreen = currentScreen;
+    currentScreen = id;
+
+    document.querySelectorAll(".screen").forEach(s => {
+        s.classList.remove("active");
+        s.classList.add("hidden");
+    });
+
+    const screen = document.getElementById(id);
+    screen.classList.remove("hidden");
+    
+    setTimeout(() => {
+        screen.classList.add("active");
+        initHUD();
+    }, 10);
+
+    updateDialogue(id);
+    
+    if (id === "fnaf") startFnafGame();
+    if (id === "bakery") initBakery();
+    if (id === "materialists") {
+        setTimeout(() => {
+            const cinemaStart = document.getElementById('cinema-start');
+            const popcornGame = document.getElementById('popcorn-game');
+            const outcomeScreen = document.getElementById('cinema-outcome');
+            
+            if (cinemaStart) cinemaStart.classList.remove('hidden');
+            if (popcornGame) popcornGame.classList.add('hidden');
+            if (outcomeScreen) outcomeScreen.classList.add('hidden');
+            
+            resetPopcornGame();
+            initPopcornGame();
+        }, 100);
+    }
+    if (id === "zoo") {
+        setTimeout(() => {
+            const zooStart = document.getElementById('zoo-start');
+            const trailGame = document.getElementById('trail-game');
+            const zooOutcome = document.getElementById('zoo-outcome');
+            
+            if (zooStart) zooStart.classList.remove('hidden');
+            if (trailGame) trailGame.classList.add('hidden');
+            if (zooOutcome) zooOutcome.classList.add('hidden');
+            
+            initTrailGame();
+        }, 100);
+    }
+}
