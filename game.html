@@ -116,11 +116,46 @@
 
 
 
+
+
+
 <!-- BAKERY LEVEL -->
 <div id="bakery" class="screen hidden">
   <h1>The Bakery of Beginnings</h1>
+  
+  <!-- Secret Chest Container - Positioned next to title -->
+  <div class="title-chest-container">
+    <div class="secret-chest" id="secret-bakery-chest" onclick="openBakerySecret()">
+      <div class="secret-chest-closed">
+        <img src="assets/chest.png" alt="Secret Chest" class="secret-chest-img">
+        <span class="secret-chest-label">📸 secrets</span>
+      </div>
+      <div class="secret-chest-contents hidden" id="bakery-secret-contents">
+        <div class="secret-content">
+          <h3>Lusk, 10:23am</h3>
+          <video controls class="secret-video" id="lusk-video">
+            <source src="assets/noisette.mp4" type="video/mp4">
+            Your browser doesn't support video, but trust me - it's cute.
+          </video>
+          <p class="video-caption">paragliders doing their thing. we were here.</p>
+          <button class="close-secret" onclick="closeBakerySecret(event); event.stopPropagation();">close chest</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Memory text - shorter, warmer, less "written" -->
+  <div class="memory-flash">
+    <p class="memory-flash-text">
+      Lusk. Noisette Bakery. You got a chocolate croissant, I got strawberry - We shared.
+      Coffee steamed in the cold air. Paragliders drifted over the beach like they had nowhere better to be.
+      Neither did we.
+    </p>
+  </div>
+  
   <p>Match the pastries to share them equally! Find all pairs before time runs out.</p>
   
+  <!-- rest of your bakery HTML remains exactly the same -->
   <div id="memory-game">
     <div class="game-header">
       <div class="game-stats">
@@ -130,7 +165,7 @@
         </div>
         <div class="stat">
           <span class="stat-label">Matches:</span>
-          <span id="matches">0</span>/6
+          <span id="matches">0/6</span>
         </div>
         <div class="stat">
           <span class="stat-label">Moves:</span>
@@ -164,86 +199,94 @@
     </div>
   </div>
   
-  <div id="bakery-outcome" class="hidden">
-    <h2 id="outcome-title"></h2>
-    <p id="outcome-text"></p>
-    <div class="reward-stats">
-      <p>Time Bonus: <span id="time-bonus">0</span> HP</p>
-      <p>Total Earned: <span id="total-hp">0</span> HP</p>
+<div id="bakery-outcome" class="hidden">
+  <div class="bakery-receipt">
+    <!-- Coffee stain effect -->
+    <div class="coffee-stain"></div>
+    
+    <div class="receipt-header">
+      <h2 id="outcome-title">✦ pastries shared ✦</h2>
+      <div class="receipt-divider">☕ ─── ☕</div>
     </div>
-    <button onclick="completeBakery()">Share the Pastries & Continue</button>
+    
+    <div id="outcome-text" class="outcome-memory"></div>
+    
+    <div class="companion-note" id="companion-outcome-note"></div>
+    
+    <div class="receipt-stats">
+      <div class="stat-row">
+        <span class="stat-icon">⏳</span>
+        <span class="stat-label">time well spent</span>
+        <span class="stat-value" id="time-bonus">0</span>
+        <span class="stat-unit">hp</span>
+      </div>
+      
+      <div class="stat-row total">
+        <span class="stat-icon">✨</span>
+        <span class="stat-label">memories earned</span>
+        <span class="stat-value" id="total-hp">20</span>
+        <span class="stat-unit">hp</span>
+      </div>
+    </div>
+    
+    <div class="paraglider-silhouette">
+      <span>🪂</span>
+      <span>🪂</span>
+    </div>
+    
+    <button onclick="completeBakery()" class="bakery-continue-btn">
+      <span class="btn-text">continue to the beach</span>
+      <span class="btn-arrow">→</span>
+    </button>
+    
+    <div class="receipt-footer">
+      <span>noisette bakery • lusk</span>
+      <span>10:23am</span>
+    </div>
   </div>
+</div> <!-- ← THIS WAS MISSING! -->
 </div>
 
 
-    
 
-<!-- CINEMA LEVEL - SIMPLIFIED POPCORN GAME -->
+
+<!-- CINEMA LEVEL -->
 <div id="materialists" class="screen hidden">
   <h1>The Silent Theatre</h1>
   <p>Share popcorn with perfect timing. A simple act, heavy with meaning.</p>
   <p class="highlight">"I love you."</p>
   
+  <!-- Popcorn Game -->
   <div id="popcorn-game" class="hidden">
-    <!-- Game Instructions -->
-    <div class="game-instructions-box">
-      <h3>🎮 How to Play:</h3>
-      <p>When the light turns <span class="green-text">GREEN</span>, click the GRAB button!</p>
-      <p>Try to grab as soon as the light changes.</p>
-      <p><strong>Goal:</strong> Grab 5 times with good timing!</p>
-    </div>
-    
     <!-- Visual Game Area -->
     <div class="popcorn-visual">
-      <div class="popcorn-bowl">
-        <div class="popcorn-pieces" id="popcorn-pieces">
-          <!-- Popcorn pieces will appear here -->
-        </div>
+      <div class="signal-light-container">
+        <div class="signal-light" id="signal-light"></div>
+        <p id="signal-text">Waiting to start...</p>
       </div>
       
-      <div class="signal-area">
-        <div class="signal-light-container">
-          <div class="signal-light" id="signal-light"></div>
-          <p id="signal-text">Waiting for signal...</p>
-        </div>
-        
-        <div class="grab-button-container">
-          <button class="grab-btn" id="grab-btn" disabled>
-            🍿 GRAB POPCORN
-          </button>
-          <p class="btn-hint">Click when light turns green!</p>
-        </div>
-      </div>
+      <button class="grab-btn" id="grab-btn" disabled>
+        🍿 WAITING...
+      </button>
     </div>
     
     <!-- Game Stats -->
     <div class="game-stats-container">
       <div class="stat-box">
         <div class="stat-label">Round</div>
-        <div class="stat-value" id="round-counter">1/5</div>
+        <div class="stat-value" id="round-counter">0/5</div>
       </div>
       
       <div class="stat-box">
         <div class="stat-label">Perfect Grabs</div>
         <div class="stat-value" id="perfect-grabs">0</div>
       </div>
-
-      <div class="stat-box">
-        <div class="stat-label">Timing Score</div>
-        <div class="stat-value" id="timing-score">0%</div>
-      </div>
     </div>
 
     <!-- Game Controls -->
     <div class="game-controls-container">
       <button onclick="startPopcornGame()" id="start-game-btn">Start Game</button>
-      <button onclick="restartPopcornGame()" id="restart-btn" class="restart-btn" disabled>🔄 Restart</button>
       <button onclick="skipCinema()" class="skip-btn">Skip to Next</button>
-    </div>
-
-    <!-- Feedback Message -->
-    <div class="feedback-message" id="feedback-message">
-      <p>Ready to play? Click "Start Game"!</p>
     </div>
   </div>
 
@@ -256,10 +299,6 @@
       <div class="stat-result">
         <span>Perfect Grabs:</span>
         <span id="final-perfect-grabs">0</span>
-      </div>
-      <div class="stat-result">
-        <span>Average Timing:</span>
-        <span id="final-timing-score">0%</span>
       </div>
       <div class="stat-result">
         <span>HP Bonus:</span>
@@ -283,7 +322,6 @@
     <div class="start-controls">
       <button onclick="startPopcornGameIntro()" class="romance-btn">🍿 Share Popcorn Together</button>
       <button onclick="skipCinema()" class="skip-btn">Skip Cinema Scene</button>
-      <button onclick="die()" class="shy-btn">😳 Too Nervous</button>
     </div>
   </div>
 </div>
@@ -299,17 +337,18 @@
 
 
 
-<!-- ZOO LEVEL - LIGHT TRAIL -->
+<!-- ZOO LEVEL - SIMPLIFIED LIGHT TRAIL -->
 <div id="zoo" class="screen hidden">
   <h1>The Winter Lights of Dublin Zoo</h1>
   <p>Trace the light patterns in the frosty air. Create beauty together.</p>
   
+  <!-- Light Trail Game -->
   <div id="trail-game" class="hidden">
     <div class="game-container">
-      <!-- PATTERN SELECTION - MOVED TO TOP -->
+      <!-- Pattern Selection -->
       <div class="pattern-selection">
         <h3>Choose a Light Pattern:</h3>
-        <div class="pattern-options" id="pattern-options">
+        <div class="pattern-options">
           <button class="pattern-btn" data-pattern="star" onclick="selectPattern('star')">
             <span class="pattern-icon">⭐</span>
             <span class="pattern-label">Star</span>
@@ -318,47 +357,24 @@
             <span class="pattern-icon">❤️</span>
             <span class="pattern-label">Heart</span>
           </button>
-          <button class="pattern-btn" data-pattern="spiral" onclick="selectPattern('spiral')">
-            <span class="pattern-icon">🌀</span>
-            <span class="pattern-label">Spiral</span>
-          </button>
-          <button class="pattern-btn" data-pattern="snowflake" onclick="selectPattern('snowflake')">
-            <span class="pattern-icon">❄️</span>
-            <span class="pattern-label">Snowflake</span>
-          </button>
-        </div>
-      </div>
-      
-      <!-- Pattern Preview -->
-      <div class="pattern-preview-container">
-        <div class="preview-box">
-          <h3>Target Pattern:</h3>
-          <div class="pattern-preview" id="pattern-preview">
-            <!-- Pattern will appear here -->
-          </div>
-          <p id="pattern-name">⭐ Star Pattern</p>
         </div>
       </div>
       
       <!-- Drawing Area -->
       <div class="drawing-container">
         <div class="drawing-instructions">
-          <p id="draw-instructions">Trace the pattern in the air with your finger!</p>
+          <p id="draw-instructions">Trace the pattern with your finger!</p>
           <div class="mobile-hint">👆 Draw on the canvas below</div>
         </div>
         
         <div class="drawing-area">
-          <canvas id="light-canvas"></canvas>
-          <div class="canvas-overlay" id="canvas-overlay">
-            <!-- Guide pattern will show here -->
-          </div>
-          <div class="canvas-frame"></div>
+          <canvas id="light-canvas" width="400" height="400"></canvas>
         </div>
         
-        <!-- Touch Controls for Mobile -->
+        <!-- Touch Controls -->
         <div class="mobile-controls">
-          <button class="mobile-btn" onclick="undoLastStroke()" id="undo-btn">↶ Undo</button>
-          <button class="mobile-btn" onclick="clearDrawing()" id="clear-btn">🗑️ Clear</button>
+          <button class="mobile-btn" onclick="undoLastStroke()">↶ Undo</button>
+          <button class="mobile-btn" onclick="clearDrawing()">🗑️ Clear</button>
           <button class="mobile-btn" onclick="toggleGuide()" id="guide-btn">👁️ Show Guide</button>
         </div>
       </div>
@@ -373,24 +389,13 @@
           <div class="accuracy-bar">
             <div class="accuracy-fill" id="accuracy-fill"></div>
           </div>
-          <div class="accuracy-milestones">
-            <span class="milestone">Poor</span>
-            <span class="milestone">Good</span>
-            <span class="milestone">Great</span>
-            <span class="milestone">Perfect!</span>
-          </div>
         </div>
       </div>
       
       <!-- Game Controls -->
       <div class="game-controls">
-        <button onclick="startTrailGame()" id="start-game-btn"> Begin Light Drawing</button>
-        <button onclick="checkDrawing()" id="check-btn" disabled>✨ Check My Pattern</button>
-      </div>
-      
-      <!-- Companion Dialogue -->
-      <div class="zoo-companion">
-        <p id="trail-dialogue">"Your hands are cold... let me warm them while you draw."</p>
+        <button onclick="startTrailGame()" id="start-game-btn"> Begin Drawing</button>
+        <button onclick="checkDrawing()" id="check-btn" disabled>✨ Check Pattern</button>
       </div>
     </div>
   </div>
@@ -400,30 +405,23 @@
     <div class="outcome-content">
       <h2>✨ Light Trail Complete ✨</h2>
       
-      <div class="result-display">
-        <div class="final-pattern" id="final-pattern-display">
-          <!-- Final pattern will be shown here -->
+      <div class="result-stats">
+        <div class="stat-item">
+          <span class="stat-label">Pattern Accuracy:</span>
+          <span class="stat-value" id="final-accuracy">0%</span>
         </div>
-        
-        <div class="result-stats">
-          <div class="stat-item">
-            <span class="stat-label">Pattern Accuracy:</span>
-            <span class="stat-value" id="final-accuracy">0%</span>
-          </div>
-          <div class="stat-item highlight">
-            <span class="stat-label">Hot Chocolate Bonus:</span>
-            <span class="stat-value" id="chocolate-bonus">+0 HP</span>
-          </div>
+        <div class="stat-item highlight">
+          <span class="stat-label">Hot Chocolate Bonus:</span>
+          <span class="stat-value" id="chocolate-bonus">+0 HP</span>
         </div>
-        
-        <p id="light-outcome" class="outcome-text">
-          The lights shimmer in appreciation of your drawing...
-        </p>
       </div>
+      
+      <p id="light-outcome" class="outcome-text">
+        The lights shimmer in appreciation of your drawing...
+      </p>
       
       <div class="outcome-controls">
         <button onclick="goTo('fnaf')" class="continue-btn">Continue to FNAF</button>
-        <!-- REMOVED: Draw Another Pattern button -->
         <button onclick="justGetChocolate()" class="skip-btn">☕ Just Get Hot Chocolate</button>
       </div>
     </div>
@@ -447,9 +445,6 @@
 
 
 
-
-
-
   <!-- FNAF LEVEL -->
   <div id="fnaf" class="screen hidden">
     <h1>Five Nights are Freddy Fazbears</h1>
@@ -460,13 +455,6 @@
     <p id="fear-text" class="highlight"></p>
   </div>
 
-  <!-- PIZZA CRAWL -->
-  <div id="pizza" class="screen hidden">
-    <h1>The Great Pizza Crawl</h1>
-    <p>Slice after slice. Strength restored. Spirits high.</p>
-    <button onclick="win()">Finish the journey</button>
-    <button onclick="die()">Quit early</button>
-  </div>
 
   <!-- YOU DIED -->
   <div id="death-screen" class="screen hidden">
