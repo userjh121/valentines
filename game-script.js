@@ -737,18 +737,6 @@ function completeMemoryGame() {
   // Outcome title
   document.getElementById('outcome-title').innerHTML = '✦ pastries shared ✦';
   
-  // Memory text - warm and specific
-  const memoryTexts = [
-    `just like lusk. your chocolate croissant, my strawberry. we shared, and you got cream on your face. the paragliders definitely saw.`,
-    `noisette bakery, 10:23am. coffee steam, cold air, and two people who didn't want to leave. the paragliders felt the same.`,
-    `you broke your croissant in half. i broke mine. somehow we both ended up with cream on our faces. classic.`,
-    `the beach was right there, but we sat outside the bakery for an hour. worth it.`,
-    `paragliders drifting like they had nowhere better to be. neither did we.`
-  ];
-  
-  document.getElementById('outcome-text').textContent = 
-    memoryTexts[Math.floor(Math.random() * memoryTexts.length)];
-  
   // Companion note
   const companionNote = document.getElementById('companion-outcome-note');
   if (companion === 'Tego') {
