@@ -2418,9 +2418,68 @@ body {
 
 
 #materialists {
-  background: linear-gradient(145deg, #1a1a2e 0%, #0f0f1a 100%);
-  color: #e6e6fa;
+  background: linear-gradient(145deg, #0c0c16 0%, #1a1a2a 100%);
+  color: #f0e6ff;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  padding: 40px 20px !important;
 }
+
+.film-title {
+  font-family: 'Oswald', 'Impact', sans-serif;
+  font-size: 3.2rem;
+  letter-spacing: 8px;
+  text-transform: uppercase;
+  color: #fff;  text-shadow: 
+    4px 4px 0 #ff4081,
+    8px 8px 0 rgba(0, 0, 0, 0.5);
+  margin-bottom: 30px;
+  line-height: 1.2;
+  word-break: break-word;
+  border-bottom: 2px solid rgba(255, 215, 0, 0.4);
+  display: inline-block;
+  padding-bottom: 15px;
+}
+
+.film-plot {
+  max-width: 700px;
+  width: 100%;
+  margin: 0 auto 40px;
+  background: rgba(20, 20, 35, 0.85);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 215, 0, 0.3);
+  border-radius: 24px;
+  padding: 30px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+  text-align: left;
+}
+
+
+.film-plot p:first-child {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: #e6e0fa;
+  margin-bottom: 25px;
+  border-left: 4px solid #ffd700;
+  padding-left: 20px;
+}
+
+
+.plot-punchline {
+  font-size: 1.25rem;
+  line-height: 1.6;
+  color: #fff5e6;
+  font-style: italic;
+  padding: 20px;
+  background: linear-gradient(145deg, rgba(255, 64, 129, 0.2), rgba(255, 215, 0, 0.1));
+  border-radius: 16px;
+  margin: 10px 0 5px;
+  border: 1px solid rgba(255, 215, 0, 0.4);
+  text-align: center;
+  font-weight: 500;
+  box-shadow: inset 0 0 20px rgba(255, 64, 129, 0.2);
+  position: relative;
+}
+
 
 /* Popcorn Visual Area */
 .popcorn-visual {
@@ -2561,11 +2620,6 @@ body {
   transform: translateY(-2px);
 }
 
-.skip-btn {
-  background: rgba(255, 255, 255, 0.1) !important;
-  color: #B0BEC5 !important;
-  border: 2px solid #546E7A !important;
-}
 
 /* Outcome Screen */
 #cinema-outcome.hidden {
@@ -2612,12 +2666,6 @@ body {
   padding: 40px 20px;
 }
 
-.start-description {
-  max-width: 600px;
-  margin: 0 auto 40px;
-  font-size: 1.2rem;
-  line-height: 1.6;
-}
 
 .start-controls {
   display: flex;
