@@ -1090,29 +1090,6 @@ function restartPopcornGame() {
     startPopcornGame();
 }
 
-// Skip cinema
-function skipCinema() {
-    // Show outcome with minimal bonus
-    const popcornGame = document.getElementById('popcorn-game');
-    const cinemaStart = document.getElementById('cinema-start');
-    const outcomeScreen = document.getElementById('cinema-outcome');
-    const popcornOutcome = document.getElementById('popcorn-outcome');
-    const sharedBonus = document.getElementById('shared-bonus');
-    
-    if (popcornGame) popcornGame.classList.add('hidden');
-    if (cinemaStart) cinemaStart.classList.add('hidden');
-    if (outcomeScreen) outcomeScreen.classList.remove('hidden');
-    
-    if (popcornOutcome) {
-        popcornOutcome.textContent = "Sometimes the moment matters more than the game.";
-    }
-    
-    if (sharedBonus) {
-        sharedBonus.textContent = "+10";
-    }
-    
-    heal(10);
-}
 
 // Reset game state
 function resetPopcornGame() {
