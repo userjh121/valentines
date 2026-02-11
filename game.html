@@ -244,21 +244,23 @@
       <span>10:23am</span>
     </div>
   </div>
-</div> <!-- ← THIS WAS MISSING! -->
+</div>
 </div>
 
 
 
-
-<!-- CINEMA LEVEL -->
+<!-- CINEMA LEVEL - The Materialists -->
 <div id="materialists" class="screen hidden">
-  <h1>The Silent Theatre</h1>
-  <p>Share popcorn with perfect timing. A simple act, heavy with meaning.</p>
-  <p class="highlight">"I love you."</p>
+  
+  <h1 class="film-title">THE MATERIALISTS</h1>
+  
+  <div class="film-plot">
+    <p>Plot: Lucy Mason is a cynical matchmaker who tells her clients to lower their standards while secretly hoping someone will clear hers. She meets a financier with surgically enhanced calves and an ex-boyfriend who can't afford a real ring. She makes the wrong choice. Then the right one.</p>
+    <p class="plot-punchline">Anyway, we said "I love you" here and you also don't even need surgically enhanced calves so big W</p>
+  </div>
   
   <!-- Popcorn Game -->
   <div id="popcorn-game" class="hidden">
-    <!-- Visual Game Area -->
     <div class="popcorn-visual">
       <div class="signal-light-container">
         <div class="signal-light" id="signal-light"></div>
@@ -270,62 +272,51 @@
       </button>
     </div>
     
-    <!-- Game Stats -->
     <div class="game-stats-container">
       <div class="stat-box">
         <div class="stat-label">Round</div>
         <div class="stat-value" id="round-counter">0/5</div>
       </div>
-      
       <div class="stat-box">
         <div class="stat-label">Perfect Grabs</div>
         <div class="stat-value" id="perfect-grabs">0</div>
       </div>
     </div>
 
-    <!-- Game Controls -->
     <div class="game-controls-container">
-      <button onclick="startPopcornGame()" id="start-game-btn">Start Game</button>
-      <button onclick="skipCinema()" class="skip-btn">Skip to Next</button>
+      <button onclick="startPopcornGame()" id="start-game-btn">🎬 Start Scene</button>
     </div>
   </div>
 
   <!-- Outcome Screen -->
   <div id="cinema-outcome" class="hidden">
-    <h2>🍿 Sharing Complete! 🍿</h2>
-    <p id="popcorn-outcome"></p>
-
-    <div class="result-stats">
-      <div class="stat-result">
-        <span>Perfect Grabs:</span>
-        <span id="final-perfect-grabs">0</span>
+    <div class="outcome-cinema">
+      <h2>🍿 CREDITS ROLL 🍿</h2>
+      <div class="outcome-film-stats">
+        <p id="popcorn-outcome" class="outcome-review"></p>
+        <div class="outcome-ratings">
+          <div class="rating-item">
+            <span class="rating-label">🍅 CRITIC SCORE</span>
+            <span class="rating-value" id="final-perfect-grabs">0</span>
+            <span class="rating-unit">/5 perfect grabs</span>
+          </div>
+        </div>
       </div>
-      <div class="stat-result">
-        <span>HP Bonus:</span>
-        <span class="hp-bonus" id="shared-bonus">+0</span>
+      <div class="outcome-controls">
+        <button onclick="goTo('zoo')" class="continue-btn">▶ Continue to Zoo Lights</button>
+        <button onclick="restartPopcornGameFromOutcome()" class="restart-btn">🔄 Director's Cut</button>
       </div>
-    </div>
-
-    <div class="outcome-controls">
-      <button onclick="goTo('zoo')">Continue to Zoo Lights</button>
-      <button onclick="restartPopcornGameFromOutcome()" class="restart-btn">🔄 Play Again</button>
     </div>
   </div>
 
   <!-- Start Screen -->
   <div id="cinema-start" class="cinema-start">
-    <div class="start-description">
-      <p>In the dark of the cinema, sharing popcorn becomes a silent conversation.</p>
-      <p class="highlight">Can you match the perfect moment?</p>
-    </div>
 
     <div class="start-controls">
-      <button onclick="startPopcornGameIntro()" class="romance-btn">🍿 Share Popcorn Together</button>
-      <button onclick="skipCinema()" class="skip-btn">Skip Cinema Scene</button>
+      <button onclick="startPopcornGameIntro()" class="romance-btn">🎭 Relive the Moment</button>
     </div>
   </div>
 </div>
-
 
 
 
