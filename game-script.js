@@ -1,1859 +1,481 @@
-let companion = localStorage.getItem('selectedCompanion');
-let hp = 100;
-let maxHP = 100;
-let lastScreen = "sogeti";
-let currentScreen = "sogeti";
-let hudCollapsed = false;
-let userExpandedHUD = false;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Our Co-Op Run - Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="hud" class="hidden collapsed">
+  <div id="hud-header" onclick="toggleHUDCollapse()">
+    <span id="hud-toggle-icon">▼</span>
+    <div id="hud-header-info">
+      <span id="hp-label">HP:</span>
+      <span id="hp-value">100%</span>
+      <span id="hud-companion-name"></span>
+    </div>
+  </div>
+  <div id="hud-content">
+    <div id="hp-container">
+      <div id="hp-bar-outer">
+        <div id="hp-bar"></div>
+      </div>
+      <div id="companion-indicator">
+        <span>Companion:</span>
+        <span id="current-companion">None</span>
+        <img id="companion-icon" src="" alt="Companion" class="hidden">
+      </div>
+    </div>
+  </div>
+</div>
 
-const dialogues = {
-  Tego: {
-    sogeti: "Tego darts ahead, opening chests with reckless abandon. ",
-    zoo: "Tego nearly steals the Baileys. Chaos ensues"
-  },
-  Mona: {
-    sogeti: "Mona stands firm, carefully examining each chest.",
-    zoo: "Mona growls softly, guarding your Baileys."
-  }
-};
 
-const music = document.getElementById("bg-music");
-const deathAudio = document.getElementById("death-audio");
+<!-- SOGETI BACKSTORY -->
+<div id="sogeti" class="screen active">
+  <h1>The Place It All Began</h1>
+  <img src="assets/sogeti.png" class="story-image">
+    <!-- Story Text -->
+  <p class="story-text">
+    Two Tarnished, unknowingly summoned to the same workplace.
+    Among meetings, deadlines, and shared suffering…
+    a bond began to form.
+  </p>
+  <!-- Minecraft Chests Container -->
+  <div class="chests-container">
 
-// Initialize game
-document.addEventListener('DOMContentLoaded', function() {
-  companion = localStorage.getItem('selectedCompanion');
+    <!-- Chest 1: Meeting Memories -->
+    <div class="chest" id="chest1" onclick="openChest(1)">
+      <div class="chest-closed">
+        <img src="assets/chest.png" alt="Chest" class="chest-img">
+        <div class="chest-label">Boardroom Drawings</div>
+      </div>
+      <div class="chest-contents hidden">
+        <div class="chest-items">
+          <img src="assets/freddy.png" alt="Freddy" class="work-item" data-description="Freddy drawing">
+          <img src="assets/frok.jpg" alt="Frok" class="work-item" data-description="Frok drawing">
+          <img src="assets/goober.jpg" alt="Goober" class="work-item" data-description="Goober drawing">
+          <img src="assets/jeremy.jpg" alt="Jeremy" class="work-item" data-description="Jeremy drawing">
+          <img src="assets/puffle.jpg" alt="Puffle" class="work-item" data-description="Puffle drawing">
+        </div>
+        <button class="close-chest" onclick="closeChest(1)">Close Chest</button>
+      </div>
+    </div>
+    
+    <!-- Chest 2: Mugshots -->
+    <div class="chest" id="chest2" onclick="openChest(2)">
+      <div class="chest-closed">
+        <img src="assets/chest.png" alt="Chest" class="chest-img">
+        <div class="chest-label">Mugshots</div>
+      </div>
+      <div class="chest-contents hidden">
+        <div class="chest-items">
+          <img src="assets/jade.jpg" alt="Jade" class="work-item" data-description="Jade's mugshot">
+          <img src="assets/max.png" alt="Max" class="work-item" data-description="Max's mugshot">
+        </div>
+        <button class="close-chest" onclick="closeChest(2)">Close Chest</button>
+      </div>
+    </div>
+    
+    <!-- Chest 3: Office Games -->
+    <div class="chest" id="chest3" onclick="openChest(3)">
+      <div class="chest-closed">
+        <img src="assets/chest.png" alt="Chest" class="chest-img">
+        <div class="chest-label">Office Games</div>
+      </div>
+      <div class="chest-contents hidden">
+        <div class="chest-items">
+          <img src="assets/clubpenguin.png" alt="Club Penguin" class="work-item" data-description="Card-Jitsu">
+          <img src="assets/clash.png" alt="Clash" class="work-item" data-description="Clash">
+          <img src="assets/minecraft.png" alt="Minecraft" class="work-item" data-description="Minecraft">
+        </div>
+        <button class="close-chest" onclick="closeChest(3)">Close Chest</button>
+      </div>
+    </div>
+  </div>
+
   
-   // Initialize HUD state from localStorage
-  const savedCollapsed = localStorage.getItem('hudCollapsed');
-  if (savedCollapsed === 'true') {
-    hudCollapsed = true;
-  } else if (savedCollapsed === 'false') {
-    userExpandedHUD = true;
-  }
-
-  initHUD();
-  updateDialogue('sogeti');
+  <!-- Description Display -->
+  <div id="item-description" class="description-box"></div>
   
-  if (music) {
-    music.volume = 0.2;
-    music.play();
-  }
-});
+  <!-- Companion Dialogue -->
+  <p id="companion-dialogue" class="highlight"></p>
+  
+  <!-- Progress Indicator -->
+  <div class="progress-indicator">
+    <span>Chests Opened: </span>
+    <span id="chests-opened">0/3</span>
+  </div>
+  
+  <!-- Continue Button (initially disabled) -->
+  <button id="continue-btn" onclick="goTo('bakery')" disabled>Continue Journey</button>
+</div>
 
-function initHUD() {
-  updateHP();
-  updateCompanionDisplay();
-  toggleHUD(true);
-}
 
-function toggleHUD(show) {
-  const hud = document.getElementById("hud");
-  if (hud) {
-    if (show) {
-      hud.classList.remove('hidden');
+
+
+
+
+
+
+
+<!-- BAKERY LEVEL -->
+<div id="bakery" class="screen hidden">
+  <h1>The Bakery of Beginnings</h1>
+  
+  <!-- Secret Chest Container - Positioned next to title -->
+  <div class="title-chest-container">
+    <div class="secret-chest" id="secret-bakery-chest" onclick="openBakerySecret()">
+      <div class="secret-chest-closed">
+        <img src="assets/chest.png" alt="Secret Chest" class="secret-chest-img">
+        <span class="secret-chest-label">📸 secrets</span>
+      </div>
+      <div class="secret-chest-contents hidden" id="bakery-secret-contents">
+        <div class="secret-content">
+          <h3>Lusk, 10:23am</h3>
+          <video controls class="secret-video" id="lusk-video">
+            <source src="assets/noisette.mp4" type="video/mp4">
+            Your browser doesn't support video, but trust me - it's cute.
+          </video>
+          <p class="video-caption">paragliders doing their thing. we were here.</p>
+          <button class="close-secret" onclick="closeBakerySecret(event); event.stopPropagation();">close chest</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Memory text - shorter, warmer, less "written" -->
+  <div class="memory-flash">
+    <p class="memory-flash-text">
+      Lusk. Noisette Bakery. You got a chocolate croissant, I got strawberry - We shared.
+      Coffee steamed in the cold air. Paragliders drifted over the beach like they had nowhere better to be.
+      Neither did we.
+    </p>
+  </div>
+  
+  <p>Match the pastries to share them equally! Find all pairs before time runs out.</p>
+  
+  <!-- rest of your bakery HTML remains exactly the same -->
+  <div id="memory-game">
+    <div class="game-header">
+      <div class="game-stats">
+        <div class="stat">
+          <span class="stat-label">Time:</span>
+          <span id="timer" class="stat-value">60</span>s
+        </div>
+        <div class="stat">
+          <span class="stat-label">Matches:</span>
+          <span id="matches">0/6</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Moves:</span>
+          <span id="moves">0</span>
+        </div>
+      </div>
       
-      // Load saved collapse state
-      const savedCollapsed = localStorage.getItem('hudCollapsed');
-      if (savedCollapsed === 'true') {
-        hud.classList.add('collapsed');
-        hudCollapsed = true;
-      } else if (savedCollapsed === 'false') {
-        hud.classList.remove('collapsed');
-        hudCollapsed = false;
-        userExpandedHUD = true;
-      }
+      <div class="difficulty">
+        <button onclick="setDifficulty('easy')" class="difficulty-btn active">Easy</button>
+        <button onclick="setDifficulty('medium')" class="difficulty-btn">Medium</button>
+        <button onclick="setDifficulty('hard')" class="difficulty-btn">Hard</button>
+      </div>
+    </div>
+    
+    <div class="memory-grid" id="memory-grid">
+      <!-- Cards will be generated here -->
+    </div>
+    
+    <div class="game-controls">
+      <button onclick="startGame()" id="start-btn">Start Game</button>
+      <button onclick="resetGame()" id="reset-btn" disabled>Restart</button>
+      <button onclick="hint()" id="hint-btn" disabled>
+        <i class="fas fa-lightbulb"></i> Hint (3 left)
+      </button>
+    </div>
+    
+    <div id="game-message" class="game-message"></div>
+    
+    <div class="companion-help">
+      <p id="bakery-dialogue" class="highlight"></p>
+    </div>
+  </div>
+  
+<div id="bakery-outcome" class="hidden">
+  <div class="bakery-receipt">
+    <!-- Coffee stain effect -->
+    <div class="coffee-stain"></div>
+    
+    <div class="receipt-header">
+      <h2 id="outcome-title">✦ pastries shared ✦</h2>
+      <div class="receipt-divider">☕ ─── ☕</div>
+    </div>
+    
+    <div id="outcome-text" class="outcome-memory"></div>
+    
+    <div class="companion-note" id="companion-outcome-note"></div>
+    
+    <div class="receipt-stats">
+      <div class="stat-row">
+        <span class="stat-icon">⏳</span>
+        <span class="stat-label">time well spent</span>
+        <span class="stat-value" id="time-bonus">0</span>
+        <span class="stat-unit">hp</span>
+      </div>
       
-      // Adjust HUD position based on screen size
-      const screenWidth = window.innerWidth;
+      <div class="stat-row total">
+        <span class="stat-icon">✨</span>
+        <span class="stat-label">memories earned</span>
+        <span class="stat-value" id="total-hp">20</span>
+        <span class="stat-unit">hp</span>
+      </div>
+    </div>
+    
+    <div class="paraglider-silhouette">
+      <span>🪂</span>
+      <span>🪂</span>
+    </div>
+    
+    <button onclick="completeBakery()" class="bakery-continue-btn">
+      <span class="btn-text">continue to the beach</span>
+      <span class="btn-arrow">→</span>
+    </button>
+    
+    <div class="receipt-footer">
+      <span>noisette bakery • lusk</span>
+      <span>10:23am</span>
+    </div>
+  </div>
+</div> <!-- ← THIS WAS MISSING! -->
+</div>
+
+
+
+
+<!-- CINEMA LEVEL -->
+<div id="materialists" class="screen hidden">
+  <h1>The Silent Theatre</h1>
+  <p>Share popcorn with perfect timing. A simple act, heavy with meaning.</p>
+  <p class="highlight">"I love you."</p>
+  
+  <!-- Popcorn Game -->
+  <div id="popcorn-game" class="hidden">
+    <!-- Visual Game Area -->
+    <div class="popcorn-visual">
+      <div class="signal-light-container">
+        <div class="signal-light" id="signal-light"></div>
+        <p id="signal-text">Waiting to start...</p>
+      </div>
       
+      <button class="grab-btn" id="grab-btn" disabled>
+        🍿 WAITING...
+      </button>
+    </div>
+    
+    <!-- Game Stats -->
+    <div class="game-stats-container">
+      <div class="stat-box">
+        <div class="stat-label">Round</div>
+        <div class="stat-value" id="round-counter">0/5</div>
+      </div>
       
-    }}
-}
+      <div class="stat-box">
+        <div class="stat-label">Perfect Grabs</div>
+        <div class="stat-value" id="perfect-grabs">0</div>
+      </div>
+    </div>
+
+    <!-- Game Controls -->
+    <div class="game-controls-container">
+      <button onclick="startPopcornGame()" id="start-game-btn">Start Game</button>
+      <button onclick="skipCinema()" class="skip-btn">Skip to Next</button>
+    </div>
+  </div>
+
+  <!-- Outcome Screen -->
+  <div id="cinema-outcome" class="hidden">
+    <h2>🍿 Sharing Complete! 🍿</h2>
+    <p id="popcorn-outcome"></p>
+
+    <div class="result-stats">
+      <div class="stat-result">
+        <span>Perfect Grabs:</span>
+        <span id="final-perfect-grabs">0</span>
+      </div>
+      <div class="stat-result">
+        <span>HP Bonus:</span>
+        <span class="hp-bonus" id="shared-bonus">+0</span>
+      </div>
+    </div>
+
+    <div class="outcome-controls">
+      <button onclick="goTo('zoo')">Continue to Zoo Lights</button>
+      <button onclick="restartPopcornGameFromOutcome()" class="restart-btn">🔄 Play Again</button>
+    </div>
+  </div>
+
+  <!-- Start Screen -->
+  <div id="cinema-start" class="cinema-start">
+    <div class="start-description">
+      <p>In the dark of the cinema, sharing popcorn becomes a silent conversation.</p>
+      <p class="highlight">Can you match the perfect moment?</p>
+    </div>
+
+    <div class="start-controls">
+      <button onclick="startPopcornGameIntro()" class="romance-btn">🍿 Share Popcorn Together</button>
+      <button onclick="skipCinema()" class="skip-btn">Skip Cinema Scene</button>
+    </div>
+  </div>
+</div>
 
 
-function toggleHUDCollapse() {
-  const hud = document.getElementById('hud');
-  if (!hud) return;
+
+
+
+
+
+
+
+
+
+
+<!-- ZOO LEVEL - SIMPLIFIED LIGHT TRAIL -->
+<div id="zoo" class="screen hidden">
+  <h1>The Winter Lights of Dublin Zoo</h1>
+  <p>Trace the light patterns in the frosty air. Create beauty together.</p>
   
-  hudCollapsed = !hudCollapsed;
-  userExpandedHUD = true;
-  
-  if (hudCollapsed) {
-    hud.classList.add('collapsed');
-    // Save state to localStorage
-    localStorage.setItem('hudCollapsed', 'true');
-  } else {
-    hud.classList.remove('collapsed');
-    localStorage.setItem('hudCollapsed', 'false');
-  }
-}
-
-
-
-function updateHP() {
-  const hpBar = document.getElementById("hp-bar");
-  const hpValue = document.getElementById("hp-value");
-  const hpPercentage = Math.round((hp / maxHP) * 100);
-  
-  if (hpBar) {
-    // Update width
-    hpBar.style.width = `${hpPercentage}%`;
-    
-    // Update color based on HP percentage
-    if (hpPercentage <= 20) {
-      hpBar.style.background = "linear-gradient(90deg, #ff0000 0%, #ff3300 100%)";
-      hpBar.classList.add('low');
-    } else if (hpPercentage <= 50) {
-      hpBar.style.background = "linear-gradient(90deg, #ff6600 0%, #ff9900 100%)";
-      hpBar.classList.remove('low');
-    } else {
-      hpBar.style.background = "linear-gradient(90deg, #00cc00 0%, #66ff66 100%)";
-      hpBar.classList.remove('low');
-    }
-  }
-  
-  if (hpValue) {
-    hpValue.textContent = `${hpPercentage}%`;
-  }
-}
-
-function updateCompanionDisplay() {
-  const companionElement = document.getElementById('current-companion');
-  const companionIcon = document.getElementById('companion-icon');
-  
-  if (companionElement && companion) {
-    companionElement.textContent = companion;
-    
-    // Set companion icon based on selection
-    if (companionIcon) {
-      const iconSrc = companion === 'Tego' ? 'assets/tego.png' : 'assets/mona.png';
-      companionIcon.src = iconSrc;
-      companionIcon.classList.remove('hidden');
-    }
-  }
-}
-
-
-function goTo(id) {
-  lastScreen = currentScreen;
-  currentScreen = id;
-
-  document.querySelectorAll(".screen").forEach(s => {
-    s.classList.remove("active");
-    s.classList.add("hidden");
-  });
-
-  const screen = document.getElementById(id);
-  screen.classList.remove("hidden");
-  
-  setTimeout(() => {
-    screen.classList.add("active");
-    initHUD();
-  }, 10);
-
-  updateDialogue(id);
-  
-  // Initialize specific games based on screen
-  if (id === "fnaf") startFnafGame();
-  if (id === "bakery") initBakery();
-  
-  if (id === "materialists") {
-    // Make sure cinema elements exist before using them
-    setTimeout(() => {
-      const cinemaStart = document.getElementById('cinema-start');
-      const popcornGame = document.getElementById('popcorn-game');
-      const outcomeScreen = document.getElementById('cinema-outcome');
+  <!-- Light Trail Game -->
+  <div id="trail-game" class="hidden">
+    <div class="game-container">
+      <!-- Pattern Selection -->
+      <div class="pattern-selection">
+        <h3>Choose a Light Pattern:</h3>
+        <div class="pattern-options">
+          <button class="pattern-btn" data-pattern="star" onclick="selectPattern('star')">
+            <span class="pattern-icon">⭐</span>
+            <span class="pattern-label">Star</span>
+          </button>
+          <button class="pattern-btn" data-pattern="heart" onclick="selectPattern('heart')">
+            <span class="pattern-icon">❤️</span>
+            <span class="pattern-label">Heart</span>
+          </button>
+        </div>
+      </div>
       
-      if (cinemaStart) cinemaStart.classList.remove('hidden');
-      if (popcornGame) popcornGame.classList.add('hidden');
-      if (outcomeScreen) outcomeScreen.classList.add('hidden');
-      
-      // Reset popcorn game
-      if (typeof resetPopcornGame === 'function') {
-        resetPopcornGame();
-      }
-    }, 100);
-  }
-
-  if (id === "zoo") {
-    setTimeout(() => {
-      const zooStart = document.getElementById('zoo-start');
-      const trailGame = document.getElementById('trail-game');
-      const zooOutcome = document.getElementById('zoo-outcome');
-      
-      if (zooStart) zooStart.classList.remove('hidden');
-      if (trailGame) trailGame.classList.add('hidden');
-      if (zooOutcome) zooOutcome.classList.add('hidden');
-      
-      // Reset trail game
-      if (canvas) {
-        trailGameActive = false;
-        allPaths = [];
-        guideVisible = false;
-      }
-    }, 100);
-  }
-}
-
-function updateDialogue(screenId) {
-  const box = document.getElementById("companion-dialogue");
-  if (!box || !companion) return;
-
-  if (dialogues[companion][screenId]) {
-    box.innerText = dialogues[companion][screenId];
-  } else {
-    box.innerText = "";
-  }
-}
-
-// Enhanced damage function
-function damage(amount = 50) {
-  hp -= amount;
-  if (hp <= 0) {
-    hp = 0;
-    die();
-  }
-  updateHP();
-  
-  // Show damage effect
-  showDamageEffect();
-}
-
-// Enhanced heal function
-function heal(amount = 30) {
-  hp = Math.min(maxHP, hp + amount);
-  updateHP();
-  
-  // Show heal effect
-  showHealEffect();
-}
-
-
-
-function showDamageEffect() {
-  const hpBar = document.getElementById('hp-bar');
-  if (hpBar) {
-    hpBar.style.transition = 'none';
-    hpBar.style.filter = 'brightness(2)';
-    
-    setTimeout(() => {
-      hpBar.style.transition = 'width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
-      hpBar.style.filter = 'brightness(1)';
-    }, 100);
-  }
-}
-
-function showHealEffect() {
-  const hpBar = document.getElementById('hp-bar');
-  if (hpBar) {
-    hpBar.style.transition = 'none';
-    hpBar.style.filter = 'brightness(1.5) saturate(2)';
-    
-    setTimeout(() => {
-      hpBar.style.transition = 'width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
-      hpBar.style.filter = 'brightness(1) saturate(1)';
-    }, 300);
-  }
-}
-
-
-
-
-/* Death and revival functions */
-function die() {
-  goTo("death-screen");
-  if (deathAudio) deathAudio.play();
-}
-
-function revive() {
-  hp = 50;
-  updateHP();
-  goTo(lastScreen);
-}
-
-function restart() {
-  localStorage.removeItem('companion');
-  window.location.href = 'index.html';
-}
-
-function win() {
-  goTo("victory");
-}
-
-
-
-
-
-
-
-
-/* ---------- FNAF Wordle Game Functions ---------- */
-const fnafWords = ["BLACK", "SCARE", "NIGHT", "WATCH"];
-let targetWord;
-let attempts;
-let maxAttempts;
-
-function startFnafGame() {
-  targetWord = fnafWords[Math.floor(Math.random() * fnafWords.length)];
-  attempts = 0;
-  maxAttempts = companion === "Mona" ? 7 : 5;
-
-  document.getElementById("wordle-grid").innerHTML = "";
-  document.getElementById("fear-text").innerText = `Fear rising… Attempts left: ${maxAttempts}`;
-}
-
-function submitGuess() {
-  const input = document.getElementById("wordle-input");
-  const guess = input.value.toUpperCase();
-
-  if (guess.length !== 5) return;
-
-  attempts++;
-  renderGuess(guess);
-  input.value = "";
-
-  if (guess === targetWord) {
-    heal(20);
-    goTo("victory");
-    return;
-  }
-
-  if (attempts >= maxAttempts) {
-    die();
-    return;
-  }
-
-  damage(10);
-  document.getElementById("fear-text").innerText = 
-    `Fear rising… Attempts left: ${maxAttempts - attempts}`;
-}
-
-function renderGuess(guess) {
-  const grid = document.getElementById("wordle-grid");
-
-  for (let i = 0; i < 5; i++) {
-    const cell = document.createElement("div");
-    cell.className = "word-cell";
-    cell.innerText = guess[i];
-
-    if (guess[i] === targetWord[i]) {
-      cell.classList.add("correct");
-    } else if (targetWord.includes(guess[i])) {
-      cell.classList.add("present");
-    } else {
-      cell.classList.add("absent");
-    }
-
-    grid.appendChild(cell);
-  }
-}
-
-
-
-
-
-
-
-
-//* ---------- Chest Game Functions ---------- */
-// Chest game variables
-let openedChests = 0;
-
-// Chest functions
-function openChest(chestNumber) {
-  const chest = document.getElementById(`chest${chestNumber}`);
-  const chestClosed = chest.querySelector('.chest-closed');
-  const chestContents = chest.querySelector('.chest-contents');
-  
-  if (chest.classList.contains('opened')) return;
-  
-  // Add opening animation
-  chest.classList.add('opening');
-  
-  setTimeout(() => {
-    chest.classList.remove('opening');
-    chest.classList.add('opened');
-    chestClosed.classList.add('hidden');
-    chestContents.classList.remove('hidden');
-    
-    // Update opened chests count
-    if (!chest.dataset.counted) {
-      openedChests++;
-      chest.dataset.counted = 'true';
-      updateChestsCounter();
-      
-
-      
-      // Random chance for extra item (30% chance)
-      if (Math.random() < 0.4) {
-        const extraItems = ["Forgotten coffee mug", "Haribo Strawberries", "Pink Pen"];
-        const extraItem = extraItems[Math.floor(Math.random() * extraItems.length)];
-        showDescription(`You found an extra item: ${extraItem}! +5 HP`);
-        heal(5);
-      }
-      if (Math.random() < 0.3) {
-        const extraItems = ["Forgotten ISTQB exam", "Forgotten DP900 exam", "Expired snack"];
-        const extraItem = extraItems[Math.floor(Math.random() * extraItems.length)];
-        showDescription(`You found an extra item: ${extraItem}! -5 HP`);
-        damage(5);
-      }
-    }
-    
-    // Update companion dialogue
-    updateCompanionChestReaction(chestNumber);
-    
-  }, 500);
-}
-
-function closeChest(chestNumber) {
-  const chest = document.getElementById(`chest${chestNumber}`);
-  const chestClosed = chest.querySelector('.chest-closed');
-  const chestContents = chest.querySelector('.chest-contents');
-  
-  chestContents.classList.add('hidden');
-  chestClosed.classList.remove('hidden');
-  
-  // Clear description
-  document.getElementById('item-description').textContent = '';
-}
-
-function updateChestsCounter() {
-  const counter = document.getElementById('chests-opened');
-  if (counter) {
-    counter.textContent = `${openedChests}/3`;
-    
-    // Enable continue button when all chests are opened
-    if (openedChests >= 3) {
-      document.getElementById('continue-btn').disabled = false;
-      showDescription("All chests explored! You can continue.");
-      
-    }
-  }
-}
-
-function updateCompanionChestReaction(chestNumber) {
-  const descriptionBox = document.getElementById('item-description');
-  const companionDialogue = document.getElementById('companion-dialogue');
-  
-  if (companion === 'Tego') {
-    const reactions = [
-      "Tego jumps into the chest and it closes behind him"
-    ];
-  } else {
-    const reactions = [
-      "Mona sniffs the air and watches as you open the chest.",
-    ];
-  }
-}
-
-function showDescription(text) {
-  const descriptionBox = document.getElementById('item-description');
-  descriptionBox.textContent = text;
-  
-  // Auto-clear after 5 seconds
-  setTimeout(() => {
-    if (descriptionBox.textContent === text) {
-      descriptionBox.textContent = '';
-    }
-  }, 5000);
-}
-
-// Add click events to work items
-document.addEventListener('DOMContentLoaded', function() {
-  // Add event listeners to work items
-  document.addEventListener('click', function(e) {
-    if (e.target.classList.contains('work-item')) {
-      const description = e.target.getAttribute('data-description');
-      showDescription(description);
-      
-      // Small HP bonus for examining items
-      heal(2);
-    }
-  });
-  
-  // Initialize chests counter
-  updateChestsCounter();
-});
-
-
-
-
-
-/* ---------- Bakery Memory Game ---------- */
-// Memory Game Variables
-let memoryGame = {
-  cards: ['🥐', '🥨', '🥖', '🍩', '🎂', '🍪', '🧁', '🥧'],
-  flippedCards: [],
-  matchedPairs: 0,
-  totalPairs: 6,
-  moves: 0,
-  timer: 60,
-  timerInterval: null,
-  gameStarted: false,
-  gameCompleted: false,
-  hintsRemaining: 3,
-  difficulty: 'easy',
-  initialTime: 90 // Will be set based on difficulty
-};
-
-// Initialize bakery
-function initBakery() {
-  updateBakeryDialogue();
-  setupMemoryGame();
-}
-
-// Setup memory game
-function setupMemoryGame() {
-  const grid = document.getElementById('memory-grid');
-  grid.innerHTML = '';
-  
-  // Create card pairs based on difficulty
-  let cardSet = [];
-  if (memoryGame.difficulty === 'easy') {
-    cardSet = memoryGame.cards.slice(0, 6); // 6 pairs
-    memoryGame.totalPairs = 6;
-    memoryGame.timer = 90;
-    memoryGame.initialTime = 90;
-  } else if (memoryGame.difficulty === 'medium') {
-    cardSet = memoryGame.cards.slice(0, 8); // 8 pairs
-    memoryGame.totalPairs = 8;
-    memoryGame.timer = 75;
-    memoryGame.initialTime = 75;
-  } else {
-    cardSet = memoryGame.cards; // 8 pairs
-    memoryGame.totalPairs = 8;
-    memoryGame.timer = 60;
-    memoryGame.initialTime = 60;
-  }
-  
-  // Duplicate cards for pairs and shuffle
-  let gameCards = [...cardSet, ...cardSet];
-  gameCards = shuffleArray(gameCards);
-  
-  // Create card elements
-  gameCards.forEach((emoji, index) => {
-    const card = document.createElement('div');
-    card.className = 'memory-card';
-    card.dataset.emoji = emoji;
-    card.dataset.index = index;
-    
-    card.innerHTML = `
-      <div class="card-back">❓</div>
-      <div class="card-front">${emoji}</div>
-    `;
-    
-    card.addEventListener('click', () => flipCard(card));
-    grid.appendChild(card);
-  });
-  
-  // Reset game state
-  memoryGame.flippedCards = [];
-  memoryGame.matchedPairs = 0;
-  memoryGame.moves = 0;
-  memoryGame.gameStarted = false;
-  memoryGame.gameCompleted = false;
-  memoryGame.hintsRemaining = 3;
-  
-  // Update display
-  updateGameStats();
-  document.getElementById('bakery-outcome').classList.add('hidden');
-  document.getElementById('memory-game').classList.remove('hidden');
-  document.getElementById('start-btn').disabled = false;
-  document.getElementById('reset-btn').disabled = true;
-  document.getElementById('hint-btn').disabled = true;
-  document.getElementById('hint-btn').innerHTML = '<i class="fas fa-lightbulb"></i> Hint (3 left)';
-  
-  // Update timer display
-  document.getElementById('timer').textContent = memoryGame.timer;
-  document.getElementById('timer').className = '';
-}
-
-// Shuffle array
-function shuffleArray(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-  return array;
-}
-
-// Flip card
-function flipCard(card) {
-  if (!memoryGame.gameStarted || memoryGame.gameCompleted) return;
-  if (card.classList.contains('flipped') || card.classList.contains('matched')) return;
-  if (memoryGame.flippedCards.length >= 2) return;
-  
-  card.classList.add('flipped');
-  memoryGame.flippedCards.push(card);
-  
-  if (memoryGame.flippedCards.length === 2) {
-    memoryGame.moves++;
-    updateGameStats();
-    checkForMatch();
-  }
-}
-
-// Check for match
-function checkForMatch() {
-  const [card1, card2] = memoryGame.flippedCards;
-  
-  if (card1.dataset.emoji === card2.dataset.emoji) {
-    // Match found
-    setTimeout(() => {
-      card1.classList.add('matched');
-      card2.classList.add('matched');
-      memoryGame.matchedPairs++;
-      memoryGame.flippedCards = [];
-      
-      showMessage('Perfect match!', 'success');
-      updateGameStats();
-      
-      if (memoryGame.matchedPairs === memoryGame.totalPairs) {
-        completeMemoryGame();
-      }
-    }, 500);
-  } else {
-    // No match - minus 5 health
-    setTimeout(() => {
-      card1.classList.remove('flipped');
-      card2.classList.remove('flipped');
-      memoryGame.flippedCards = [];
-      showMessage('Wrong match! -5 HP', 'error');
-      damage(5); // Minus 5 health for wrong match
-    }, 1000);
-  }
-}
-
-// Start game
-function startGame() {
-  memoryGame.gameStarted = true;
-  document.getElementById('start-btn').disabled = true;
-  document.getElementById('reset-btn').disabled = false;
-  document.getElementById('hint-btn').disabled = false;
-
-  // First, show all cards briefly (2 seconds)
-  const cards = document.querySelectorAll('.memory-card');
-  cards.forEach(card => {
-    card.classList.add('flipped');
-  });
-  
-  showMessage('Memorise the pastries!', 'info');
-
-  setTimeout(() => {
-    cards.forEach(card => {
-      card.classList.remove('flipped');
-    });
-    
-    // Start timer
-    memoryGame.timerInterval = setInterval(() => {
-      memoryGame.timer--;
-      document.getElementById('timer').textContent = memoryGame.timer;
-      
-      // Update timer color
-      const timerElement = document.getElementById('timer');
-      if (memoryGame.timer <= 15) {
-        timerElement.className = 'danger';
-      } else if (memoryGame.timer <= 30) {
-        timerElement.className = 'warning';
-      }
-      
-      if (memoryGame.timer <= 0) {
-        endGame(false);
-      }
-    }, 1000);
-    
-    showMessage('Game started! Find all the pairs!', 'info');
-  }, 2000);
-}
-
-// Reset game
-function resetGame() {
-  clearInterval(memoryGame.timerInterval);
-  setupMemoryGame();
-  showMessage('Game reset!', 'info');
-}
-
-// Set difficulty
-function setDifficulty(level) {
-  memoryGame.difficulty = level;
-  
-  // Update button states
-  document.querySelectorAll('.difficulty-btn').forEach(btn => {
-    btn.classList.remove('active');
-  });
-  event.target.classList.add('active');
-  
-  resetGame();
-}
-
-// Provide hint
-function hint() {
-  if (memoryGame.hintsRemaining <= 0 || !memoryGame.gameStarted || memoryGame.gameCompleted) return;
-  
-  memoryGame.hintsRemaining--;
-  
-  // Find first unmatched card and flip it briefly
-  const cards = document.querySelectorAll('.memory-card:not(.matched):not(.flipped)');
-  if (cards.length > 0) {
-    const randomCard = cards[Math.floor(Math.random() * cards.length)];
-    randomCard.classList.add('flipped');
-    
-    setTimeout(() => {
-      randomCard.classList.remove('flipped');
-    }, 1000);
-  }
-  
-  document.getElementById('hint-btn').innerHTML = 
-    `<i class="fas fa-lightbulb"></i> Hint (${memoryGame.hintsRemaining} left)`;
-  
-  if (memoryGame.hintsRemaining <= 0) {
-    document.getElementById('hint-btn').disabled = true;
-  }
-  
-  showMessage(`Hint used! ${memoryGame.hintsRemaining} hints remaining.`, 'info');
-}
-
-// Complete game successfully - UPDATED VERSION
-// Complete game successfully - UPDATED WITH PRETTIER OUTCOME
-function completeMemoryGame() {
-  clearInterval(memoryGame.timerInterval);
-  memoryGame.gameCompleted = true;
-  
-  // Calculate time used
-  const timeUsed = memoryGame.initialTime - memoryGame.timer;
-  
-  // Calculate time bonus
-  let timeBonus = 0;
-  if (timeUsed <= 30) timeBonus = 10;
-  else if (timeUsed <= 45) timeBonus = 5;
-  
-  const baseBonus = 20;
-  const totalHP = baseBonus + timeBonus;
-  
-  // Get companion name
-  const companionName = companion || 'your companion';
-  
-  // Outcome title
-  document.getElementById('outcome-title').innerHTML = '✦ pastries shared ✦';
-  
-  // Memory text - warm and specific
-  const memoryTexts = [
-    `just like lusk. your chocolate croissant, my strawberry. we shared, and you got cream on your face. the paragliders definitely saw.`,
-    `noisette bakery, 10:23am. coffee steam, cold air, and two people who didn't want to leave. the paragliders felt the same.`,
-    `you broke your croissant in half. i broke mine. somehow we both ended up with cream on our faces. classic.`,
-    `the beach was right there, but we sat outside the bakery for an hour. worth it.`,
-    `paragliders drifting like they had nowhere better to be. neither did we.`
-  ];
-  
-  document.getElementById('outcome-text').textContent = 
-    memoryTexts[Math.floor(Math.random() * memoryTexts.length)];
-  
-  // Companion note
-  const companionNote = document.getElementById('companion-outcome-note');
-  if (companion === 'Tego') {
-    companionNote.textContent = `tego: "you still owe me a bite of that strawberry thing."`;
-  } else if (companion === 'Mona') {
-    companionNote.textContent = `mona: "we should go back. tomorrow?"`;
-  } else {
-    companionNote.textContent = `the paragliders are still out there, probably.`;
-  }
-  
-  // Update stats
-  document.getElementById('time-bonus').textContent = timeBonus;
-  document.getElementById('total-hp').textContent = totalHP;
-  
-  // Show outcome screen
-  document.getElementById('memory-game').classList.add('hidden');
-  document.getElementById('bakery-outcome').classList.remove('hidden');
-  
-  // Award HP
-  heal(totalHP);
-  
-  // Optional: show a little message
-  if (timeBonus === 10) {
-    showMessage(`fast workers! +${timeBonus} bonus hp`, 'success');
-  }
-}
-
-// End game (time out)
-function endGame(success) {
-  clearInterval(memoryGame.timerInterval);
-  memoryGame.gameCompleted = true;
-  
-  if (!success) {
-    showMessage('Time\'s up! The pastries burned...', 'error');
-    damage(15);
-    
-    // Show continue option anyway
-    setTimeout(() => {
-      document.getElementById('memory-game').classList.add('hidden');
-      document.getElementById('bakery-outcome').classList.remove('hidden');
-      document.getElementById('outcome-title').textContent = 'Pastries Burned!';
-      document.getElementById('outcome-text').textContent = 
-        `You took too long and the pastries burned. ${companion} looks disappointed.`;
-      document.getElementById('time-bonus').textContent = '0';
-      document.getElementById('total-hp').textContent = '0';
-    }, 1500);
-  }
-}
-
-// Update game stats
-function updateGameStats() {
-  document.getElementById('matches').textContent = `${memoryGame.matchedPairs}/${memoryGame.totalPairs}`;
-  document.getElementById('moves').textContent = memoryGame.moves;
-  document.getElementById('timer').textContent = memoryGame.timer;
-}
-
-// Show message
-function showMessage(text, type) {
-  const messageElement = document.getElementById('game-message');
-  messageElement.textContent = text;
-  messageElement.className = `game-message ${type}`;
-  
-  // Clear message after 2 seconds
-  setTimeout(() => {
-    if (messageElement.textContent === text) {
-      messageElement.textContent = '';
-      messageElement.className = 'game-message';
-    }
-  }, 2000);
-}
-
-// Complete bakery section
-function completeBakery() {
-  goTo('materialists');
-}
-
-// ---------- BAKERY SECRET CHEST ----------
-function openBakerySecret() {
-  const chest = document.getElementById('secret-bakery-chest');
-  const chestClosed = chest.querySelector('.secret-chest-closed');
-  const chestContents = document.getElementById('bakery-secret-contents');
-  const video = document.getElementById('lusk-video');
-  
-  // Add opening animation
-  chest.classList.add('opening');
-  
-  setTimeout(() => {
-    chest.classList.remove('opening');
-    chestClosed.classList.add('hidden');
-    chestContents.classList.remove('hidden');
-    // Play video when chest opens
-    if (video) video.play();
-  }, 300);
-}
-
-function closeBakerySecret() {
-  const chest = document.getElementById('secret-bakery-chest');
-  const chestClosed = chest.querySelector('.secret-chest-closed');
-  const chestContents = document.getElementById('bakery-secret-contents');
-  const video = document.getElementById('lusk-video');
-  
-  // Pause video when closing chest
-  if (video) video.pause();
-  chestContents.classList.add('hidden');
-  chestClosed.classList.remove('hidden');
-}
-
-
-// Update bakery dialogue based on companion
-function updateBakeryDialogue() {
-  const dialogue = document.getElementById('bakery-dialogue');
-  if (!companion || !dialogue) return;
-  
-  if (companion === 'Tego') {
-    dialogue.textContent = "Tego tries to eat all the pastries before you can match them!";
-  } else {
-    dialogue.textContent = "Mona carefully watches each move, offering strategic advice.";
-  }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// ============================================
-// SIMPLIFIED POPCORN GAME
-// ============================================
-
-// Game Variables
-let popcornGameActive = false;
-let currentRound = 0;
-let perfectGrabs = 0;
-let greenLightTime = 0;
-
-// DOM Elements
-let signalLight, signalText, grabBtn;
-let roundCounter, perfectGrabsDisplay;
-let startGameBtn;
-
-// Initialize Game
-function initPopcornGame() {
-    console.log("Initializing popcorn game...");
-    
-    // Get DOM elements
-    signalLight = document.getElementById('signal-light');
-    signalText = document.getElementById('signal-text');
-    grabBtn = document.getElementById('grab-btn');
-    roundCounter = document.getElementById('round-counter');
-    perfectGrabsDisplay = document.getElementById('perfect-grabs');
-    startGameBtn = document.getElementById('start-game-btn');
-    
-    // Set up event listeners
-    if (grabBtn) {
-        grabBtn.addEventListener('click', handleGrabClick);
-    }
-    
-    // Reset game state
-    resetPopcornGame();
-}
-
-// Start the game
-function startPopcornGame() {
-    if (popcornGameActive) return;
-    
-    popcornGameActive = true;
-    
-    // Disable start button
-    if (startGameBtn) startGameBtn.disabled = true;
-    
-    // Reset stats
-    currentRound = 0;
-    perfectGrabs = 0;
-    
-    // Update displays
-    updateStatsDisplay();
-    
-    // Start first round
-    startNextRound();
-}
-
-// Start a new round
-function startNextRound() {
-    if (!popcornGameActive) return;
-    
-    // ❌ REMOVE THIS LINE
-    // greenLightTime = Date.now();
-    
-    // Remove this duplicate line too:
-    // signalLight.className = 'signal-light green';
-    
-    currentRound++;
-    
-    if (currentRound > 5) {
-        endGame();
-        return;
-    }
-    
-    // Update round counter
-    if (roundCounter) {
-        roundCounter.textContent = `${currentRound}/5`;
-    }
-    
-    // Reset UI
-    signalLight.className = 'signal-light';
-    signalText.textContent = "Get ready...";
-    grabBtn.disabled = true;
-    grabBtn.textContent = "🍿 WAITING...";
-    
-    // Random delay (1-2.5 seconds)
-    const delay = 1000 + Math.random() * 1500;
-    
-    // Show green signal after delay
-    setTimeout(() => {
-        if (!popcornGameActive) return;
+      <!-- Drawing Area -->
+      <div class="drawing-container">
+        <div class="drawing-instructions">
+          <p id="draw-instructions">Trace the pattern with your finger!</p>
+          <div class="mobile-hint">👆 Draw on the canvas below</div>
+        </div>
         
-        greenLightTime = Date.now(); // ✅ SET IT HERE!
+        <div class="drawing-area">
+          <canvas id="light-canvas" width="400" height="400"></canvas>
+        </div>
         
-        signalLight.className = 'signal-light green';
-        signalText.textContent = "GRAB NOW!";
-        grabBtn.disabled = false;
-        grabBtn.textContent = "🍿 GRAB NOW!";
-        grabBtn.classList.add('active');
-        
-        // Auto-fail if too slow (2 seconds)
-        setTimeout(() => {
-            if (grabBtn.disabled === false && popcornGameActive) {
-                handleRoundEnd(false);
-            }
-        }, 2000);
-    }, delay);
-}
+        <!-- Touch Controls -->
+        <div class="mobile-controls">
+          <button class="mobile-btn" onclick="undoLastStroke()">↶ Undo</button>
+          <button class="mobile-btn" onclick="clearDrawing()">🗑️ Clear</button>
+          <button class="mobile-btn" onclick="toggleGuide()" id="guide-btn">👁️ Show Guide</button>
+        </div>
+      </div>
+      
+      <!-- Accuracy Display -->
+      <div class="accuracy-display">
+        <div class="accuracy-item">
+          <div class="accuracy-label">Pattern Accuracy:</div>
+          <div class="accuracy-value" id="accuracy-value">0%</div>
+        </div>
+        <div class="accuracy-bar-container">
+          <div class="accuracy-bar">
+            <div class="accuracy-fill" id="accuracy-fill"></div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Game Controls -->
+      <div class="game-controls">
+        <button onclick="startTrailGame()" id="start-game-btn"> Begin Drawing</button>
+        <button onclick="checkDrawing()" id="check-btn" disabled>✨ Check Pattern</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Outcome Screen -->
+  <div id="zoo-outcome" class="hidden">
+    <div class="outcome-content">
+      <h2>✨ Light Trail Complete ✨</h2>
+      
+      <div class="result-stats">
+        <div class="stat-item">
+          <span class="stat-label">Pattern Accuracy:</span>
+          <span class="stat-value" id="final-accuracy">0%</span>
+        </div>
+        <div class="stat-item highlight">
+          <span class="stat-label">Hot Chocolate Bonus:</span>
+          <span class="stat-value" id="chocolate-bonus">+0 HP</span>
+        </div>
+      </div>
+      
+      <p id="light-outcome" class="outcome-text">
+        The lights shimmer in appreciation of your drawing...
+      </p>
+      
+      <div class="outcome-controls">
+        <button onclick="goTo('fnaf')" class="continue-btn">Continue to FNAF</button>
+        <button onclick="justGetChocolate()" class="skip-btn">☕ Just Get Hot Chocolate</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Start Screen -->
+  <div id="zoo-start" class="zoo-start">
+    <div class="zoo-description">
+      <p>The air is crisp, the lights dance through the trees like frozen fireflies.</p>
+      <p class="highlight">Trace patterns in the cold air with your companion...</p>
+    </div>
+    
+    <div class="zoo-choices">
+      <button onclick="startZooGame()" class="romance-btn">✨ Trace Light Patterns</button>
+      <button onclick="skipToChocolate()" class="skip-btn">☕ Skip to Hot Chocolate</button>
+      <button onclick="getTooCold()" class="shy-btn">❄️ Get Too Cold (-20 HP)</button>
+    </div>
+  </div>
+</div>
+
+
+
+
+  <!-- FNAF LEVEL -->
+  <div id="fnaf" class="screen hidden">
+    <h1>Five Nights are Freddy Fazbears</h1>
+    <p>Animatronics lurk. Fear rises. Guess the word before fear consumes you</p>
+    <div id="wordle-grid"></div>
+    <input id="wordle-input" maxlength="5" placeholder="5 letter word">
+    <button onclick="submitGuess()">Submit</button>
+    <p id="fear-text" class="highlight"></p>
+  </div>
+
+
+  <!-- YOU DIED -->
+  <div id="death-screen" class="screen hidden">
+    <img src="assets/died.png">
+    <br>
+    <img src="assets/powerup.png" class="character" onclick="revive()" title="Touch grace to revive">
+    <p>Touch the grace to rise again.</p>
+    <button onclick="restart()">Return to Beginning</button>
+  </div>
+
+  <!-- VICTORY -->
+  <div id="victory" class="screen hidden">
+    <h1>Journey Complete</h1>
+    <p>Through every trial, every night, every shared moment… you made it.</p>
+    <h2>You reached me ❤️</h2>
+    <p class="highlight">Happy Valentine's Day.</p>
+  </div>
 
-function handleGrabClick() {
-    if (!popcornGameActive || grabBtn.disabled) return;
-    
-    // Calculate actual reaction time
-    const reactionTime = Date.now() - greenLightTime;
-    
-    // Perfect: < 500ms, Good: < 1000ms, Slow: < 2000ms
-    const isPerfect = reactionTime < 500;
-    const isGood = reactionTime < 1000;
-    const success = reactionTime < 2000;
-    
-    handleRoundEnd(success, isPerfect);
-}
-
-// Handle end of round
-function handleRoundEnd(success, isPerfect = false) {
-    // Disable grab button
-    grabBtn.disabled = true;
-    grabBtn.classList.remove('active');
-    grabBtn.textContent = "🍿 WAITING...";
-    
-    if (success) {
-        if (isPerfect) {
-            // Perfect grab
-            perfectGrabs++;
-            signalLight.style.backgroundColor = '#4CAF50';
-            signalText.textContent = "PERFECT!";
-        } else {
-            // Good grab
-            signalLight.style.backgroundColor = '#FFC107';
-            signalText.textContent = "Good!";
-        }
-    } else {
-        // Missed
-        signalLight.style.backgroundColor = '#F44336';
-        signalText.textContent = "Too slow!";
-    }
-    
-    // Update stats
-    updateStatsDisplay();
-    
-    // Start next round after delay
-    setTimeout(startNextRound, 1500);
-}
-
-// Update stats display
-function updateStatsDisplay() {
-    if (roundCounter) {
-        roundCounter.textContent = `${currentRound}/5`;
-    }
-    
-    if (perfectGrabsDisplay) {
-        perfectGrabsDisplay.textContent = perfectGrabs;
-    }
-}
-
-// End the game
-function endGame() {
-    popcornGameActive = false;
-    
-    // Calculate HP bonus
-    let hpBonus = 10;
-    let outcomeText = "";
-    
-    if (perfectGrabs === 5) {
-        hpBonus = 50;
-        outcomeText = "Perfect! Every grab was perfectly timed.";
-    } else if (perfectGrabs >= 3) {
-        hpBonus = 25;
-        outcomeText = "Great timing! You shared the popcorn beautifully.";
-    } else if (perfectGrabs >= 1) {
-        hpBonus = 15;
-        outcomeText = "Good job! You found a nice rhythm together.";
-    } else {
-        outcomeText = "The popcorn sharing was fun anyway!";
-    }
-    
-    // Show outcome
-    showPopcornOutcome(hpBonus, outcomeText);
-}
-
-// Show outcome screen
-function showPopcornOutcome(hpBonus, outcomeText) {
-    const popcornGame = document.getElementById('popcorn-game');
-    const outcomeScreen = document.getElementById('cinema-outcome');
-    const popcornOutcome = document.getElementById('popcorn-outcome');
-    const sharedBonus = document.getElementById('shared-bonus');
-    const finalPerfectGrabs = document.getElementById('final-perfect-grabs');
-    
-    if (!popcornGame || !outcomeScreen) return;
-    
-    popcornGame.classList.add('hidden');
-    outcomeScreen.classList.remove('hidden');
-    
-    // Update outcome display
-    if (popcornOutcome) popcornOutcome.textContent = outcomeText;
-    if (sharedBonus) sharedBonus.textContent = `+${hpBonus}`;
-    if (finalPerfectGrabs) finalPerfectGrabs.textContent = perfectGrabs;
-    
-    // Award HP
-    heal(hpBonus);
-}
-
-// Restart game
-function restartPopcornGame() {
-    // Reset game
-    resetPopcornGame();
-    
-    // Start new game
-    startPopcornGame();
-}
-
-// Skip cinema
-function skipCinema() {
-    // Show outcome with minimal bonus
-    const popcornGame = document.getElementById('popcorn-game');
-    const cinemaStart = document.getElementById('cinema-start');
-    const outcomeScreen = document.getElementById('cinema-outcome');
-    const popcornOutcome = document.getElementById('popcorn-outcome');
-    const sharedBonus = document.getElementById('shared-bonus');
-    
-    if (popcornGame) popcornGame.classList.add('hidden');
-    if (cinemaStart) cinemaStart.classList.add('hidden');
-    if (outcomeScreen) outcomeScreen.classList.remove('hidden');
-    
-    if (popcornOutcome) {
-        popcornOutcome.textContent = "Sometimes the moment matters more than the game.";
-    }
-    
-    if (sharedBonus) {
-        sharedBonus.textContent = "+10";
-    }
-    
-    heal(10);
-}
-
-// Reset game state
-function resetPopcornGame() {
-    popcornGameActive = false;
-    currentRound = 0;
-    perfectGrabs = 0;
-    
-    // Reset UI
-    if (signalLight) {
-        signalLight.className = 'signal-light';
-        signalLight.style.backgroundColor = '';
-    }
-    
-    if (signalText) {
-        signalText.textContent = "Waiting to start...";
-    }
-    
-    if (grabBtn) {
-        grabBtn.disabled = true;
-        grabBtn.classList.remove('active');
-        grabBtn.textContent = "🍿 WAITING...";
-    }
-    
-    if (startGameBtn) startGameBtn.disabled = false;
-    
-    if (roundCounter) roundCounter.textContent = "0/5";
-    if (perfectGrabsDisplay) perfectGrabsDisplay.textContent = "0";
-}
-
-// Start popcorn game from intro
-function startPopcornGameIntro() {
-    const cinemaStart = document.getElementById('cinema-start');
-    const popcornGame = document.getElementById('popcorn-game');
-    
-    if (cinemaStart) cinemaStart.classList.add('hidden');
-    if (popcornGame) popcornGame.classList.remove('hidden');
-    
-    initPopcornGame();
-}
-
-// Restart from outcome
-function restartPopcornGameFromOutcome() {
-    const outcomeScreen = document.getElementById('cinema-outcome');
-    const popcornGame = document.getElementById('popcorn-game');
-    
-    if (outcomeScreen) outcomeScreen.classList.add('hidden');
-    if (popcornGame) popcornGame.classList.remove('hidden');
-    
-    restartPopcornGame();
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// ============================================
-// FIXED LIGHT TRAIL GAME
-// ============================================
-
-// Game Variables
-let trailGameActive = false;
-let canvas, ctx;
-let isDrawing = false;
-let currentPattern = 'star';
-let allPaths = [];
-let guideVisible = false;
-let canvasScale = 1;
-
-// Fixed Pattern Definitions
-const patterns = {
-  star: {
-    name: "Star",
-    icon: "⭐",
-    points: [
-      {x: 200, y: 50},
-      {x: 240, y: 180},
-      {x: 380, y: 180},
-      {x: 260, y: 260},
-      {x: 300, y: 390},
-      {x: 200, y: 300},
-      {x: 100, y: 390},
-      {x: 140, y: 260},
-      {x: 20, y: 180},
-      {x: 160, y: 180},
-      {x: 200, y: 50}
-    ]
-  },
-  heart: {
-    name: "Heart",
-    icon: "❤️",
-    points: [
-      {x: 200, y: 100},
-      {x: 260, y: 50},
-      {x: 320, y: 100},
-      {x: 320, y: 180},
-      {x: 200, y: 320},
-      {x: 80, y: 180},
-      {x: 80, y: 100},
-      {x: 140, y: 50},
-      {x: 200, y: 100}
-    ]
-  }
-};
-
-// Initialize the game - FIXED
-// Initialize the game - FIXED
-function initTrailGame() {
-    // Get canvas and context
-    canvas = document.getElementById('light-canvas');
-    ctx = canvas.getContext('2d');
-    
-    // FIXED: Set proper canvas size
-    const container = document.querySelector('.drawing-area');
-    if (container) {
-        const rect = container.getBoundingClientRect();
-        canvas.width = rect.width;
-        canvas.height = rect.height;
-        canvasScale = 400 / canvas.width;
-    } else {
-        canvas.width = 400;
-        canvas.height = 400;
-        canvasScale = 1;
-    }
-    
-    // Fix for HiDPI displays
-    const dpr = window.devicePixelRatio || 1;
-    canvas.width = canvas.width * dpr;
-    canvas.height = canvas.height * dpr;
-    ctx.scale(dpr, dpr);
-    
-    // Set up event listeners
-    setupDrawingEvents();
-    
-    // Select default pattern
-    selectPattern('star');
-    
-    // Reset game state
-    resetDrawing();
-    
-    // ✅ Make sure game is NOT active yet
-    trailGameActive = false;
-}
-// FIXED: Get correct canvas coordinates
-function getCanvasCoordinates(e) {
-    const rect = canvas.getBoundingClientRect();
-    
-    if (e.type.includes('touch')) {
-        // For touch events
-        const touch = e.touches[0] || e.changedTouches[0];
-        const x = (touch.clientX - rect.left) * (canvas.width / (rect.width * window.devicePixelRatio));
-        const y = (touch.clientY - rect.top) * (canvas.height / (rect.height * window.devicePixelRatio));
-        return { x, y };
-    } else {
-        // For mouse events
-        const x = (e.clientX - rect.left) * (canvas.width / (rect.width * window.devicePixelRatio));
-        const y = (e.clientY - rect.top) * (canvas.height / (rect.height * window.devicePixelRatio));
-        return { x, y };
-    }
-}
-
-// Set up drawing event listeners - FIXED
-function setupDrawingEvents() {
-    if (!canvas) return;
-    
-    // Clear existing listeners
-    canvas.removeEventListener('mousedown', startDrawing);
-    canvas.removeEventListener('mousemove', draw);
-    canvas.removeEventListener('mouseup', stopDrawing);
-    canvas.removeEventListener('touchstart', startDrawingTouch);
-    canvas.removeEventListener('touchmove', drawTouch);
-    canvas.removeEventListener('touchend', stopDrawing);
-    
-    // Mouse events
-    canvas.addEventListener('mousedown', startDrawing);
-    canvas.addEventListener('mousemove', draw);
-    canvas.addEventListener('mouseup', stopDrawing);
-    canvas.addEventListener('mouseleave', stopDrawing);
-    
-    // Touch events - fixed to prevent scrolling
-    canvas.addEventListener('touchstart', function(e) {
-        e.preventDefault();
-        startDrawingTouch(e);
-    }, { passive: false });
-    
-    canvas.addEventListener('touchmove', function(e) {
-        e.preventDefault();
-        drawTouch(e);
-    }, { passive: false });
-    
-    canvas.addEventListener('touchend', function(e) {
-        e.preventDefault();
-        stopDrawing();
-    }, { passive: false });
-}
-
-// Start Zoo Game
-// Start Zoo Game
-function startZooGame() {
-    const startScreen = document.getElementById('zoo-start');
-    const trailGame = document.getElementById('trail-game');
-    
-    if (startScreen) startScreen.classList.add('hidden');
-    if (trailGame) trailGame.classList.remove('hidden');
-    
-    // ✅ Reset game state FIRST
-    trailGameActive = false;
-    allPaths = [];
-    guideVisible = false;
-    
-    // Initialize the game
-    setTimeout(initTrailGame, 100);
-}
-
-
-// Reset drawing state
-function resetDrawing() {
-    allPaths = [];
-    clearCanvas();
-    
-    document.getElementById('check-btn').disabled = true;
-    document.getElementById('check-btn').textContent = "✨ Check My Pattern";
-    document.getElementById('check-btn').onclick = checkDrawing;
-    
-    const startBtn = document.getElementById('start-game-btn');
-    if (startBtn) {
-        startBtn.disabled = false;
-        startBtn.textContent = "Begin Drawing";
-        startBtn.style.display = 'inline-block'; // ✅ Show start button
-    }
-    
-    // ✅ Hide redo button when resetting
-    const redoBtn = document.getElementById('redo-btn');
-    if (redoBtn) {
-        redoBtn.style.display = 'none';
-    }
-}
-
-// Select a pattern
-function selectPattern(pattern) {
-    if (!patterns[pattern]) return;
-    
-    currentPattern = pattern;
-    const patternInfo = patterns[pattern];
-    
-    // Update UI
-    document.getElementById('pattern-name').textContent = `${patternInfo.icon} ${patternInfo.name} Pattern`;
-    
-    // Update active button
-    document.querySelectorAll('.pattern-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    document.querySelector(`[data-pattern="${pattern}"]`).classList.add('active');
-    
-    // Reset drawing if game is active
-    if (trailGameActive) {
-        resetDrawing();
-    }
-}
-
-// Draw guide pattern on canvas - FIXED
-function drawGuidePattern() {
-    if (!ctx || !patterns[currentPattern]) return;
-    
-    const pattern = patterns[currentPattern];
-    ctx.save();
-    ctx.beginPath();
-    
-    // Scale pattern points to current canvas size
-    pattern.points.forEach((point, index) => {
-        const scaledX = point.x * (canvas.width / (400 * window.devicePixelRatio));
-        const scaledY = point.y * (canvas.height / (400 * window.devicePixelRatio));
-        
-        if (index === 0) {
-            ctx.moveTo(scaledX, scaledY);
-        } else {
-            ctx.lineTo(scaledX, scaledY);
-        }
-    });
-    
-    ctx.closePath();
-    ctx.strokeStyle = 'rgba(135, 206, 235, 0.3)';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-    ctx.restore();
-}
-
-// Toggle guide visibility
-function toggleGuide() {
-    guideVisible = !guideVisible;
-    const guideBtn = document.getElementById('guide-btn');
-    
-    if (guideVisible) {
-        guideBtn.textContent = '👁️ Hide Guide';
-        guideBtn.style.backgroundColor = 'rgba(135, 206, 235, 0.2)';
-        if (ctx) {
-            clearCanvas();
-            drawGuidePattern();
-            redrawUserPaths();
-        }
-    } else {
-        guideBtn.textContent = '👁️ Show Guide';
-        guideBtn.style.backgroundColor = '';
-        if (ctx) {
-            clearCanvas();
-            redrawUserPaths();
-        }
-    }
-}
-
-// Drawing functions - FIXED
-function startDrawing(e) {
-    if (!trailGameActive) return;
-    
-    const { x, y } = getCanvasCoordinates(e);
-    isDrawing = true;
-    
-    allPaths.push([{x, y}]);
-    
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-}
-
-function startDrawingTouch(e) {
-    if (!trailGameActive) return;
-    
-    const { x, y } = getCanvasCoordinates(e);
-    isDrawing = true;
-    
-    allPaths.push([{x, y}]);
-    
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-}
-
-function draw(e) {
-    if (!isDrawing) return;
-    
-    const { x, y } = getCanvasCoordinates(e);
-    
-    drawLine(x, y);
-    
-    allPaths[allPaths.length - 1].push({x, y});
-}
-
-function drawTouch(e) {
-    if (!isDrawing) return;
-    
-    const { x, y } = getCanvasCoordinates(e);
-    
-    drawLine(x, y);
-    
-    allPaths[allPaths.length - 1].push({x, y});
-}
-
-function drawLine(x, y) {
-    ctx.lineWidth = 3;
-    ctx.lineCap = 'round';
-    ctx.strokeStyle = `rgba(135, 206, 235, 0.8)`;
-    
-    ctx.lineTo(x, y);
-    ctx.stroke();
-    
-    // Add glow effect
-    ctx.shadowColor = 'rgba(135, 206, 235, 0.5)';
-    ctx.shadowBlur = 5;
-    ctx.stroke();
-    ctx.shadowBlur = 0;
-}
-
-function stopDrawing() {
-    if (!isDrawing) return;
-    
-    isDrawing = false;
-    ctx.closePath();
-}
-
-// Clear canvas - FIXED
-function clearCanvas() {
-    if (!ctx) return;
-    
-    // Clear with background
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // Draw a dark background
-    ctx.fillStyle = 'rgba(5, 15, 30, 0.9)';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    // Draw subtle grid for reference
-    drawGrid();
-}
-
-// Draw grid for reference
-function drawGrid() {
-    ctx.strokeStyle = 'rgba(135, 206, 235, 0.1)';
-    ctx.lineWidth = 1;
-    
-    // Scale grid to canvas
-    const stepX = canvas.width / (8 * window.devicePixelRatio);
-    const stepY = canvas.height / (8 * window.devicePixelRatio);
-    
-    // Vertical lines
-    for (let x = 0; x <= canvas.width; x += stepX) {
-        ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, canvas.height);
-        ctx.stroke();
-    }
-    
-    // Horizontal lines
-    for (let y = 0; y <= canvas.height; y += stepY) {
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(canvas.width, y);
-        ctx.stroke();
-    }
-}
-
-// Redraw all user paths - FIXED
-function redrawUserPaths() {
-    if (!ctx || allPaths.length === 0) return;
-    
-    allPaths.forEach(path => {
-        if (path.length < 2) return;
-        
-        ctx.beginPath();
-        ctx.moveTo(path[0].x, path[0].y);
-        
-        for (let i = 1; i < path.length; i++) {
-            ctx.lineTo(path[i].x, path[i].y);
-        }
-        
-        ctx.lineWidth = 3;
-        ctx.lineCap = 'round';
-        ctx.strokeStyle = 'rgba(135, 206, 235, 0.8)';
-        ctx.stroke();
-    });
-}
-
-// Undo last stroke
-function undoLastStroke() {
-    if (allPaths.length === 0) return;
-    
-    allPaths.pop();
-    clearCanvas();
-    if (guideVisible) drawGuidePattern();
-    redrawUserPaths();
-}
-
-// Clear drawing
-function clearDrawing() {
-    allPaths = [];
-    clearCanvas();
-    if (guideVisible) drawGuidePattern();
-}
-
-// Check drawing accuracy - FIXED
-function checkDrawing() {
-    if (allPaths.length === 0) {
-        alert("You haven't drawn anything yet! Try tracing the pattern first.");
-        return;
-    }
-    
-    // ✅ Stop the game from allowing more drawing
-    trailGameActive = false;
-    
-    // Calculate accuracy (FIXED - now actually checks pattern)
-    const accuracy = calculateAccuracy();
-    
-    // Update display
-    updateAccuracyDisplay(accuracy);
-    
-    // ✅ Change check button to show results
-    const checkBtn = document.getElementById('check-btn');
-    checkBtn.textContent = "✨ See Results";
-    checkBtn.onclick = function() {
-        finishTrailGame(accuracy);
-    };
-}
-// Finish game and show outcome
-function finishTrailGame(accuracy) {
-    // ✅ Check if accuracy is below 50% - send to death screen
-    if (accuracy < 50) {
-        // Set HP to 0 and go directly to death screen
-        hp = 0;
-        updateHP();
-        die();
-        return; // Stop execution here
-    }
-    
-    // Calculate HP bonus based on accuracy
-    const hpBonus = Math.floor(accuracy / 3); // Up to ~30 HP
-    
-    // Show outcome screen
-    const trailGame = document.getElementById('trail-game');
-    const outcomeScreen = document.getElementById('zoo-outcome');
-    
-    if (trailGame) trailGame.classList.add('hidden');
-    if (outcomeScreen) outcomeScreen.classList.remove('hidden');
-    
-    // Update outcome display
-    document.getElementById('final-accuracy').textContent = `${accuracy}%`;
-    document.getElementById('chocolate-bonus').textContent = `+${hpBonus} HP`;
-    
-    // Update outcome text
-    const outcomeText = document.getElementById('light-outcome');
-    if (outcomeText) {
-        if (accuracy >= 80) {
-            outcomeText.textContent = "Perfect! The lights shimmered in perfect sync with your movements. Your drawing captured the pattern beautifully.";
-        } else if (accuracy >= 60) {
-            outcomeText.textContent = "Great job! The lights twinkled in appreciation. You traced most of the pattern well.";
-        } else {
-            outcomeText.textContent = "Good attempt! You captured the essence of the pattern. With practice, you'll get even better.";
-        }
-    }
-    
-    // Award HP
-    heal(hpBonus);
-}
-
-// Start the actual drawing game
-function startTrailGame() {
-    if (trailGameActive) return;
-    
-    trailGameActive = true;
-    
-    // Update UI
-    const startBtn = document.getElementById('start-game-btn');
-    if (startBtn) {
-        startBtn.disabled = true;
-        startBtn.textContent = "Drawing Active";
-    }
-    
-    document.getElementById('check-btn').disabled = false;
-    
-    // Clear canvas
-    clearCanvas();
-    
-    // Draw guide if enabled
-    if (guideVisible) {
-        drawGuidePattern();
-    }
-    
-    document.getElementById('draw-instructions').textContent = "Trace the pattern! Release to finish.";
-}
-
-// Reset drawing state
-function resetDrawing() {
-    allPaths = [];
-    clearCanvas();
-    
-    document.getElementById('check-btn').disabled = true;
-    document.getElementById('check-btn').textContent = "✨ Check My Pattern";
-    document.getElementById('check-btn').onclick = checkDrawing;
-    
-    const startBtn = document.getElementById('start-game-btn');
-    if (startBtn) {
-        startBtn.disabled = false;
-        startBtn.textContent = "Begin Drawing";
-    }
-}
-
-
-
-
-function calculateAccuracy() {
-    const pattern = patterns[currentPattern];
-    if (!pattern || allPaths.length === 0) return 0;
-    
-    // Flatten user points
-    let userPoints = [];
-    allPaths.forEach(path => {
-        userPoints = userPoints.concat(path);
-    });
-    
-    if (userPoints.length < 10) return 20;
-    
-    // Scale pattern
-    const scaledPattern = pattern.points.map(p => ({
-        x: p.x * (canvas.width / (400 * window.devicePixelRatio)),
-        y: p.y * (canvas.height / (400 * window.devicePixelRatio))
-    }));
-    
-    // Create line segments from pattern
-    let patternSegments = [];
-    for (let i = 0; i < scaledPattern.length - 1; i++) {
-        patternSegments.push({
-            start: scaledPattern[i],
-            end: scaledPattern[i + 1]
-        });
-    }
-    
-    // Check coverage of each segment
-    const threshold = 15; // pixels
-    let segmentCoverage = new Array(patternSegments.length).fill(0);
-    
-    userPoints.forEach(point => {
-        patternSegments.forEach((segment, idx) => {
-            const dist = pointToSegmentDistance(point, segment.start, segment.end);
-            if (dist < threshold) {
-                segmentCoverage[idx]++;
-            }
-        });
-    });
-    
-    // Calculate how well each segment was traced
-    let totalCoverage = 0;
-    segmentCoverage.forEach(coverage => {
-        // Each segment should have at least 5 points near it
-        totalCoverage += Math.min(100, (coverage / 5) * 100);
-    });
-    
-    let accuracy = totalCoverage / patternSegments.length;
-    
-    // Cap between 20-95
-    return Math.max(20, Math.min(95, Math.round(accuracy)));
-}
-
-// Helper: distance from point to line segment
-function pointToSegmentDistance(point, segStart, segEnd) {
-    const dx = segEnd.x - segStart.x;
-    const dy = segEnd.y - segStart.y;
-    const lengthSquared = dx * dx + dy * dy;
-    
-    if (lengthSquared === 0) {
-        // Segment is a point
-        const pdx = point.x - segStart.x;
-        const pdy = point.y - segStart.y;
-        return Math.sqrt(pdx * pdx + pdy * pdy);
-    }
-    
-    // Find projection of point onto line
-    let t = ((point.x - segStart.x) * dx + (point.y - segStart.y) * dy) / lengthSquared;
-    t = Math.max(0, Math.min(1, t)); // Clamp to segment
-    
-    const projX = segStart.x + t * dx;
-    const projY = segStart.y + t * dy;
-    
-    const distX = point.x - projX;
-    const distY = point.y - projY;
-    
-    return Math.sqrt(distX * distX + distY * distY);
-}
-
-// Update accuracy display
-function updateAccuracyDisplay(accuracy) {
-    const accuracyValue = document.getElementById('accuracy-value');
-    const accuracyFill = document.getElementById('accuracy-fill');
-    
-    if (accuracyValue) accuracyValue.textContent = `${accuracy}%`;
-    if (accuracyFill) {
-        accuracyFill.style.width = `${accuracy}%`;
-        // Color based on accuracy
-        if (accuracy >= 80) {
-            accuracyFill.style.background = 'linear-gradient(90deg, #F44336, #FF9800, #4CAF50)';
-        } else if (accuracy >= 60) {
-            accuracyFill.style.background = 'linear-gradient(90deg, #F44336, #FF9800)';
-        } else {
-            accuracyFill.style.background = '#F44336';
-        }
-    }
-}
-
-
-// Reset drawing state
-function resetDrawing() {
-    allPaths = [];
-    clearCanvas();
-    
-    document.getElementById('check-btn').disabled = true;
-    document.getElementById('check-btn').textContent = "✨ Check My Pattern";
-    document.getElementById('check-btn').onclick = checkDrawing;
-    
-    const startBtn = document.getElementById('start-game-btn');
-    if (startBtn) {
-        startBtn.disabled = false;
-        startBtn.textContent = "Begin Drawing";
-    }
-}
-
-// Skip to chocolate
-function skipToChocolate() {
-    const startScreen = document.getElementById('zoo-start');
-    const outcomeScreen = document.getElementById('zoo-outcome');
-    
-    if (startScreen) startScreen.classList.add('hidden');
-    if (outcomeScreen) outcomeScreen.classList.remove('hidden');
-    
-    // Give minimal bonus
-    heal(15);
-    
-    // Update outcome for skip
-    document.getElementById('final-accuracy').textContent = "Skipped";
-    document.getElementById('chocolate-bonus').textContent = "+15 HP";
-    
-    document.getElementById('light-outcome').textContent = 
-        "Sometimes the warmest moments don't need perfect patterns. The simple act of being together, hot chocolates in hand, says everything.";
-}
-
-// Just get chocolate
-function justGetChocolate() {
-    heal(30);
-    goTo('fnaf');
-}
+  <audio id="death-audio" src="assets/you-died.mp3"></audio>
+  <audio id="bg-music" src="assets/start-song.mp3" loop></audio>
 
-// Get too cold
-function getTooCold() {
-    damage(20);
-    goTo('fnaf');
-}
+  <script src="game-script.js"></script>
+</body>
+</html>
