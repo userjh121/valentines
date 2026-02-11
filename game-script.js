@@ -149,8 +149,6 @@ function goTo(id) {
   
   setTimeout(() => {
     screen.classList.add("active");
-    
-    // Re-initialize HUD for the new screen
     initHUD();
   }, 10);
 
@@ -159,36 +157,43 @@ function goTo(id) {
   // Initialize specific games based on screen
   if (id === "fnaf") startFnafGame();
   if (id === "bakery") initBakery();
+  
   if (id === "materialists") {
-    // Reset heartbeat game when entering cinema
+    // Make sure cinema elements exist before using them
     setTimeout(() => {
       const cinemaStart = document.getElementById('cinema-start');
-      const heartbeatGame = document.getElementById('heartbeat-game');
+      const popcornGame = document.getElementById('popcorn-game');
       const outcomeScreen = document.getElementById('cinema-outcome');
       
       if (cinemaStart) cinemaStart.classList.remove('hidden');
-      if (heartbeatGame) heartbeatGame.classList.add('hidden');
+      if (popcornGame) popcornGame.classList.add('hidden');
       if (outcomeScreen) outcomeScreen.classList.add('hidden');
       
-      resetHeartbeatGame();
-      initHeartbeatGame();
+      // Reset popcorn game
+      if (typeof resetPopcornGame === 'function') {
+        resetPopcornGame();
+      }
     }, 100);
   }
 
-
-  setTimeout(function() {
-        const screen = document.getElementById(id);
-        if (screen) {
-            screen.scrollTop = 0;
-            window.scrollTo(0, 0);
-        }
-        
-        // Re-initialize mobile support for new screen
-        if (id === 'materialists') {
-            setTimeout(initMobileSupport, 150);
-            setTimeout(setupTouchControls, 250);
-        }
-    }, 50);
+  if (id === "zoo") {
+    setTimeout(() => {
+      const zooStart = document.getElementById('zoo-start');
+      const trailGame = document.getElementById('trail-game');
+      const zooOutcome = document.getElementById('zoo-outcome');
+      
+      if (zooStart) zooStart.classList.remove('hidden');
+      if (trailGame) trailGame.classList.add('hidden');
+      if (zooOutcome) zooOutcome.classList.add('hidden');
+      
+      // Reset trail game
+      if (canvas) {
+        trailGameActive = false;
+        allPaths = [];
+        guideVisible = false;
+      }
+    }, 100);
+  }
 }
 
 function updateDialogue(screenId) {
@@ -310,7 +315,7 @@ function submitGuess() {
 
   if (guess === targetWord) {
     heal(20);
-    goTo("pizza");
+    goTo("victory");
     return;
   }
 
@@ -710,6 +715,7 @@ function hint() {
 }
 
 // Complete game successfully - UPDATED VERSION
+// Complete game successfully - UPDATED WITH PRETTIER OUTCOME
 function completeMemoryGame() {
   clearInterval(memoryGame.timerInterval);
   memoryGame.gameCompleted = true;
@@ -717,26 +723,43 @@ function completeMemoryGame() {
   // Calculate time used
   const timeUsed = memoryGame.initialTime - memoryGame.timer;
   
-  // Calculate time bonus: max 10 HP if finished in 30 seconds or less
+  // Calculate time bonus
   let timeBonus = 0;
-  if (timeUsed <= 30) {
-    timeBonus = 10;
-  } else if (timeUsed <= 45) {
-    timeBonus = 5;
-  }
+  if (timeUsed <= 30) timeBonus = 10;
+  else if (timeUsed <= 45) timeBonus = 5;
   
-  // Base completion bonus
   const baseBonus = 20;
-  
-  // Total HP earned
   const totalHP = baseBonus + timeBonus;
   
-  // Update outcome screen
-  document.getElementById('outcome-title').textContent = 'Pastries Shared!';
-  document.getElementById('outcome-text').textContent = 
-    `You successfully matched all pastries and shared them equally with ${companion}.`;
+  // Get companion name
+  const companionName = companion || 'your companion';
   
-  // Show stats (matches your HTML)
+  // Outcome title
+  document.getElementById('outcome-title').innerHTML = '✦ pastries shared ✦';
+  
+  // Memory text - warm and specific
+  const memoryTexts = [
+    `just like lusk. your chocolate croissant, my strawberry. we shared, and you got cream on your face. the paragliders definitely saw.`,
+    `noisette bakery, 10:23am. coffee steam, cold air, and two people who didn't want to leave. the paragliders felt the same.`,
+    `you broke your croissant in half. i broke mine. somehow we both ended up with cream on our faces. classic.`,
+    `the beach was right there, but we sat outside the bakery for an hour. worth it.`,
+    `paragliders drifting like they had nowhere better to be. neither did we.`
+  ];
+  
+  document.getElementById('outcome-text').textContent = 
+    memoryTexts[Math.floor(Math.random() * memoryTexts.length)];
+  
+  // Companion note
+  const companionNote = document.getElementById('companion-outcome-note');
+  if (companion === 'Tego') {
+    companionNote.textContent = `tego: "you still owe me a bite of that strawberry thing."`;
+  } else if (companion === 'Mona') {
+    companionNote.textContent = `mona: "we should go back. tomorrow?"`;
+  } else {
+    companionNote.textContent = `the paragliders are still out there, probably.`;
+  }
+  
+  // Update stats
   document.getElementById('time-bonus').textContent = timeBonus;
   document.getElementById('total-hp').textContent = totalHP;
   
@@ -747,13 +770,9 @@ function completeMemoryGame() {
   // Award HP
   heal(totalHP);
   
-  // Show message based on time
+  // Optional: show a little message
   if (timeBonus === 10) {
-    showMessage(`Fast completion! +${totalHP} HP (${baseBonus} base + ${timeBonus} fast bonus)!`, 'success');
-  } else if (timeBonus === 5) {
-    showMessage(`Good time! +${totalHP} HP (${baseBonus} base + ${timeBonus} time bonus)!`, 'success');
-  } else {
-    showMessage(`Completed! +${totalHP} HP base reward!`, 'success');
+    showMessage(`fast workers! +${timeBonus} bonus hp`, 'success');
   }
 }
 
@@ -806,6 +825,38 @@ function completeBakery() {
   goTo('materialists');
 }
 
+// ---------- BAKERY SECRET CHEST ----------
+function openBakerySecret() {
+  const chest = document.getElementById('secret-bakery-chest');
+  const chestClosed = chest.querySelector('.secret-chest-closed');
+  const chestContents = document.getElementById('bakery-secret-contents');
+  const video = document.getElementById('lusk-video');
+  
+  // Add opening animation
+  chest.classList.add('opening');
+  
+  setTimeout(() => {
+    chest.classList.remove('opening');
+    chestClosed.classList.add('hidden');
+    chestContents.classList.remove('hidden');
+    // Play video when chest opens
+    if (video) video.play();
+  }, 300);
+}
+
+function closeBakerySecret() {
+  const chest = document.getElementById('secret-bakery-chest');
+  const chestClosed = chest.querySelector('.secret-chest-closed');
+  const chestContents = document.getElementById('bakery-secret-contents');
+  const video = document.getElementById('lusk-video');
+  
+  // Pause video when closing chest
+  if (video) video.pause();
+  chestContents.classList.add('hidden');
+  chestClosed.classList.remove('hidden');
+}
+
+
 // Update bakery dialogue based on companion
 function updateBakeryDialogue() {
   const dialogue = document.getElementById('bakery-dialogue');
@@ -831,11 +882,6 @@ function updateBakeryDialogue() {
 
 
 
-
-
-// ============================================
-// POPCORN GAME - SHARED POPCORN MINI-GAME
-// ============================================
 // ============================================
 // SIMPLIFIED POPCORN GAME
 // ============================================
@@ -843,34 +889,25 @@ function updateBakeryDialogue() {
 // Game Variables
 let popcornGameActive = false;
 let currentRound = 0;
-let totalRounds = 5;
 let perfectGrabs = 0;
-let totalReactionTime = 0;
-let roundStartTime = 0;
-let playerReactionTime = 0;
-let signalTimeout;
-let roundTimeout;
+let greenLightTime = 0;
 
 // DOM Elements
-let signalLight, signalText, grabBtn, feedbackMessage;
-let roundCounter, perfectGrabsDisplay, timingScoreDisplay;
-let popcornPieces, startGameBtn, restartBtn;
+let signalLight, signalText, grabBtn;
+let roundCounter, perfectGrabsDisplay;
+let startGameBtn;
 
 // Initialize Game
 function initPopcornGame() {
-    console.log("Initializing simplified popcorn game...");
+    console.log("Initializing popcorn game...");
     
     // Get DOM elements
     signalLight = document.getElementById('signal-light');
     signalText = document.getElementById('signal-text');
     grabBtn = document.getElementById('grab-btn');
-    feedbackMessage = document.getElementById('feedback-message');
     roundCounter = document.getElementById('round-counter');
     perfectGrabsDisplay = document.getElementById('perfect-grabs');
-    timingScoreDisplay = document.getElementById('timing-score');
-    popcornPieces = document.getElementById('popcorn-pieces');
     startGameBtn = document.getElementById('start-game-btn');
-    restartBtn = document.getElementById('restart-btn');
     
     // Set up event listeners
     if (grabBtn) {
@@ -879,38 +916,20 @@ function initPopcornGame() {
     
     // Reset game state
     resetPopcornGame();
-    
-    console.log("Game initialized successfully");
-}
-
-// Start game intro
-function startPopcornGameIntro() {
-    console.log("Starting game intro...");
-    const cinemaStart = document.getElementById('cinema-start');
-    const popcornGame = document.getElementById('popcorn-game');
-    
-    if (cinemaStart) cinemaStart.classList.add('hidden');
-    if (popcornGame) popcornGame.classList.remove('hidden');
-    
-    initPopcornGame();
-    showFeedback("Click 'Start Game' to begin!", "normal");
 }
 
 // Start the game
 function startPopcornGame() {
     if (popcornGameActive) return;
     
-    console.log("Starting popcorn game...");
     popcornGameActive = true;
     
-    // Disable start button, enable restart button
+    // Disable start button
     if (startGameBtn) startGameBtn.disabled = true;
-    if (restartBtn) restartBtn.disabled = false;
     
     // Reset stats
     currentRound = 0;
     perfectGrabs = 0;
-    totalReactionTime = 0;
     
     // Update displays
     updateStatsDisplay();
@@ -923,110 +942,90 @@ function startPopcornGame() {
 function startNextRound() {
     if (!popcornGameActive) return;
     
+    // ❌ REMOVE THIS LINE
+    // greenLightTime = Date.now();
+    
+    // Remove this duplicate line too:
+    // signalLight.className = 'signal-light green';
+    
     currentRound++;
     
-    if (currentRound > totalRounds) {
+    if (currentRound > 5) {
         endGame();
         return;
     }
     
-    console.log(`Starting round ${currentRound}/${totalRounds}`);
-    
     // Update round counter
     if (roundCounter) {
-        roundCounter.textContent = `${currentRound}/${totalRounds}`;
+        roundCounter.textContent = `${currentRound}/5`;
     }
     
-    // Reset UI for new round
-    resetRoundUI();
+    // Reset UI
+    signalLight.className = 'signal-light';
+    signalText.textContent = "Get ready...";
+    grabBtn.disabled = true;
+    grabBtn.textContent = "🍿 WAITING...";
     
-    // Show countdown
-    showFeedback(`Round ${currentRound} - Get ready...`, "normal");
+    // Random delay (1-2.5 seconds)
+    const delay = 1000 + Math.random() * 1500;
     
-    // Random delay before signal (1-3 seconds)
-    const delay = 1000 + Math.random() * 2000;
-    
-    // Countdown sequence
+    // Show green signal after delay
     setTimeout(() => {
-        signalLight.className = 'signal-light red';
-        signalText.textContent = "Ready...";
-        showFeedback("Get ready to grab!", "normal");
-    }, delay / 2);
-    
-    // Show yellow warning
-    setTimeout(() => {
-        signalLight.className = 'signal-light yellow';
-        signalText.textContent = "Get set...";
-        showFeedback("Almost time...", "normal");
-    }, delay - 500);
-    
-    // Show green signal (GO!)
-    signalTimeout = setTimeout(() => {
+        if (!popcornGameActive) return;
+        
+        greenLightTime = Date.now(); // ✅ SET IT HERE!
+        
         signalLight.className = 'signal-light green';
         signalText.textContent = "GRAB NOW!";
         grabBtn.disabled = false;
+        grabBtn.textContent = "🍿 GRAB NOW!";
         grabBtn.classList.add('active');
-        roundStartTime = Date.now();
-        showFeedback("NOW! Click GRAB!", "good");
+        
+        // Auto-fail if too slow (2 seconds)
+        setTimeout(() => {
+            if (grabBtn.disabled === false && popcornGameActive) {
+                handleRoundEnd(false);
+            }
+        }, 2000);
     }, delay);
-    
-    // Auto-fail if player doesn't click (3 seconds)
-    roundTimeout = setTimeout(() => {
-        if (popcornGameActive) {
-            handleRoundEnd(false, 3000); // Too slow
-        }
-    }, delay + 3000);
 }
 
-// Handle grab button click
 function handleGrabClick() {
     if (!popcornGameActive || grabBtn.disabled) return;
     
-    // Calculate reaction time
-    playerReactionTime = Date.now() - roundStartTime;
+    // Calculate actual reaction time
+    const reactionTime = Date.now() - greenLightTime;
     
-    // Determine if grab was good
-    const isPerfect = playerReactionTime < 500; // Less than 0.5 seconds = perfect
-    const isGood = playerReactionTime < 1000; // Less than 1 second = good
+    // Perfect: < 500ms, Good: < 1000ms, Slow: < 2000ms
+    const isPerfect = reactionTime < 500;
+    const isGood = reactionTime < 1000;
+    const success = reactionTime < 2000;
     
-    // Handle round end
-    handleRoundEnd(isPerfect || isGood, playerReactionTime);
+    handleRoundEnd(success, isPerfect);
 }
 
 // Handle end of round
-function handleRoundEnd(success, reactionTime) {
-    // Clear timeouts
-    clearTimeout(signalTimeout);
-    clearTimeout(roundTimeout);
-    
+function handleRoundEnd(success, isPerfect = false) {
     // Disable grab button
     grabBtn.disabled = true;
     grabBtn.classList.remove('active');
-    
-    // Remove a popcorn piece
-    removePopcornPiece();
+    grabBtn.textContent = "🍿 WAITING...";
     
     if (success) {
-        // Good grab
-        totalReactionTime += reactionTime;
-        
-        if (reactionTime < 500) {
+        if (isPerfect) {
             // Perfect grab
             perfectGrabs++;
             signalLight.style.backgroundColor = '#4CAF50';
             signalText.textContent = "PERFECT!";
-            showFeedback(`Perfect! ${reactionTime}ms`, "perfect");
         } else {
             // Good grab
             signalLight.style.backgroundColor = '#FFC107';
             signalText.textContent = "Good!";
-            showFeedback(`Good! ${reactionTime}ms`, "good");
         }
     } else {
-        // Missed or too slow
+        // Missed
         signalLight.style.backgroundColor = '#F44336';
         signalText.textContent = "Too slow!";
-        showFeedback("Too slow! Try faster next time", "poor");
     }
     
     // Update stats
@@ -1036,189 +1035,66 @@ function handleRoundEnd(success, reactionTime) {
     setTimeout(startNextRound, 1500);
 }
 
-// Remove a popcorn piece
-function removePopcornPiece() {
-    if (!popcornPieces) return;
-    
-    // Create popcorn pieces if needed
-    const pieces = popcornPieces.querySelectorAll('.popcorn-piece');
-    if (pieces.length === 0) {
-        generatePopcornPieces();
-        return;
-    }
-    
-    // Remove one piece with animation
-    const piece = pieces[Math.floor(Math.random() * pieces.length)];
-    piece.classList.add('grabbed');
-    
-    // Remove from DOM after animation
-    setTimeout(() => {
-        piece.remove();
-        
-        // Regenerate if running low
-        const remaining = popcornPieces.querySelectorAll('.popcorn-piece').length;
-        if (remaining < 3) {
-            generatePopcornPieces();
-        }
-    }, 800);
-}
-
-// Generate popcorn pieces
-function generatePopcornPieces() {
-    if (!popcornPieces) return;
-    
-    // Clear existing pieces
-    popcornPieces.innerHTML = '';
-    
-    // Create 10 popcorn pieces
-    for (let i = 0; i < 10; i++) {
-        const piece = document.createElement('div');
-        piece.className = 'popcorn-piece';
-        piece.style.animationDelay = `${Math.random() * 2}s`;
-        popcornPieces.appendChild(piece);
-    }
-}
-
 // Update stats display
 function updateStatsDisplay() {
     if (roundCounter) {
-        roundCounter.textContent = `${currentRound}/${totalRounds}`;
+        roundCounter.textContent = `${currentRound}/5`;
     }
     
     if (perfectGrabsDisplay) {
         perfectGrabsDisplay.textContent = perfectGrabs;
-        
-        // Color code
-        if (perfectGrabs >= 4) {
-            perfectGrabsDisplay.style.color = '#4CAF50';
-        } else if (perfectGrabs >= 2) {
-            perfectGrabsDisplay.style.color = '#FFC107';
-        } else {
-            perfectGrabsDisplay.style.color = '#F44336';
-        }
-    }
-    
-    if (timingScoreDisplay && perfectGrabs > 0) {
-        const avgTime = Math.round(totalReactionTime / perfectGrabs);
-        const score = Math.max(0, 100 - Math.floor(avgTime / 10));
-        timingScoreDisplay.textContent = `${score}%`;
-        
-        // Color code
-        if (score >= 80) {
-            timingScoreDisplay.style.color = '#4CAF50';
-        } else if (score >= 60) {
-            timingScoreDisplay.style.color = '#FFC107';
-        } else if (score >= 40) {
-            timingScoreDisplay.style.color = '#FF9800';
-        } else {
-            timingScoreDisplay.style.color = '#F44336';
-        }
-    }
-}
-
-// Show feedback message
-function showFeedback(message, type = "normal") {
-    if (!feedbackMessage) return;
-    
-    feedbackMessage.textContent = message;
-    feedbackMessage.className = 'feedback-message';
-    
-    if (type === "perfect") {
-        feedbackMessage.classList.add('perfect');
-    } else if (type === "good") {
-        feedbackMessage.classList.add('good');
-    } else if (type === "poor") {
-        feedbackMessage.classList.add('poor');
-    }
-}
-
-// Reset UI for new round
-function resetRoundUI() {
-    if (signalLight) {
-        signalLight.className = 'signal-light';
-        signalLight.style.backgroundColor = '';
-    }
-    
-    if (signalText) {
-        signalText.textContent = "Waiting for signal...";
-    }
-    
-    if (grabBtn) {
-        grabBtn.disabled = true;
-        grabBtn.classList.remove('active');
     }
 }
 
 // End the game
 function endGame() {
-    console.log("Ending game...");
     popcornGameActive = false;
     
-    // Calculate final score
-    const avgTime = perfectGrabs > 0 ? Math.round(totalReactionTime / perfectGrabs) : 0;
-    const finalScore = Math.max(0, 100 - Math.floor(avgTime / 10));
+    // Calculate HP bonus
+    let hpBonus = 10;
+    let outcomeText = "";
+    
+    if (perfectGrabs === 5) {
+        hpBonus = 50;
+        outcomeText = "Perfect! Every grab was perfectly timed.";
+    } else if (perfectGrabs >= 3) {
+        hpBonus = 25;
+        outcomeText = "Great timing! You shared the popcorn beautifully.";
+    } else if (perfectGrabs >= 1) {
+        hpBonus = 15;
+        outcomeText = "Good job! You found a nice rhythm together.";
+    } else {
+        outcomeText = "The popcorn sharing was fun anyway!";
+    }
     
     // Show outcome
-    showPopcornOutcome(perfectGrabs, finalScore);
+    showPopcornOutcome(hpBonus, outcomeText);
 }
 
 // Show outcome screen
-function showPopcornOutcome(perfectCount, score) {
-    console.log("Showing outcome...");
+function showPopcornOutcome(hpBonus, outcomeText) {
     const popcornGame = document.getElementById('popcorn-game');
     const outcomeScreen = document.getElementById('cinema-outcome');
     const popcornOutcome = document.getElementById('popcorn-outcome');
     const sharedBonus = document.getElementById('shared-bonus');
     const finalPerfectGrabs = document.getElementById('final-perfect-grabs');
-    const finalTimingScore = document.getElementById('final-timing-score');
     
-    if (!popcornGame || !outcomeScreen || !popcornOutcome || !sharedBonus) return;
+    if (!popcornGame || !outcomeScreen) return;
     
     popcornGame.classList.add('hidden');
     outcomeScreen.classList.remove('hidden');
     
-    // Calculate HP bonus
-    let hpBonus = 0;
-    let outcomeText = "";
-    
-    if (perfectCount === 5 && score >= 90) {
-        hpBonus = 50;
-        outcomeText = "Perfect! Every grab was perfectly timed. The popcorn sharing felt like a synchronized dance. 'I love you' slips out as naturally as reaching for another piece.";
-    } else if (perfectCount >= 4) {
-        hpBonus = 35;
-        outcomeText = "Excellent timing! You shared the popcorn beautifully. The simple act felt intimate, meaningful. The words feel right there, waiting to be said.";
-    } else if (perfectCount >= 3) {
-        hpBonus = 25;
-        outcomeText = "Good job! You found a nice rhythm together. The popcorn sharing was sweet, if a little clumsy. The moment feels warm and comfortable.";
-    } else if (perfectCount >= 2) {
-        hpBonus = 15;
-        outcomeText = "You managed to sync up a couple times. There were some fumbles, but the effort was charming. Sometimes imperfection is more memorable.";
-    } else {
-        hpBonus = 10;
-        outcomeText = "The popcorn sharing was a bit chaotic, but you shared some laughs. Sometimes it's not about perfect timing, but about sharing the moment.";
-    }
-    
     // Update outcome display
-    popcornOutcome.textContent = outcomeText;
-    sharedBonus.textContent = `+${hpBonus}`;
-    
-    if (finalPerfectGrabs) finalPerfectGrabs.textContent = perfectCount;
-    if (finalTimingScore) finalTimingScore.textContent = `${score}%`;
+    if (popcornOutcome) popcornOutcome.textContent = outcomeText;
+    if (sharedBonus) sharedBonus.textContent = `+${hpBonus}`;
+    if (finalPerfectGrabs) finalPerfectGrabs.textContent = perfectGrabs;
     
     // Award HP
     heal(hpBonus);
-    
-    console.log(`Game ended. Perfect grabs: ${perfectCount}, Score: ${score}%, HP bonus: ${hpBonus}`);
 }
 
-// Restart game from game screen
+// Restart game
 function restartPopcornGame() {
-    console.log("Restarting game...");
-    
-    // Clear any active timeouts
-    clearTimeout(signalTimeout);
-    clearTimeout(roundTimeout);
-    
     // Reset game
     resetPopcornGame();
     
@@ -1226,29 +1102,8 @@ function restartPopcornGame() {
     startPopcornGame();
 }
 
-// Restart game from outcome screen
-function restartPopcornGameFromOutcome() {
-    console.log("Restarting from outcome screen...");
-    
-    // Go back to game screen
-    const outcomeScreen = document.getElementById('cinema-outcome');
-    const popcornGame = document.getElementById('popcorn-game');
-    
-    if (outcomeScreen) outcomeScreen.classList.add('hidden');
-    if (popcornGame) popcornGame.classList.remove('hidden');
-    
-    // Restart game
-    restartPopcornGame();
-}
-
 // Skip cinema
 function skipCinema() {
-    console.log("Skipping cinema...");
-    
-    // Clear any active timeouts
-    clearTimeout(signalTimeout);
-    clearTimeout(roundTimeout);
-    
     // Show outcome with minimal bonus
     const popcornGame = document.getElementById('popcorn-game');
     const cinemaStart = document.getElementById('cinema-start');
@@ -1261,7 +1116,7 @@ function skipCinema() {
     if (outcomeScreen) outcomeScreen.classList.remove('hidden');
     
     if (popcornOutcome) {
-        popcornOutcome.textContent = "Sometimes words speak louder than shared snacks. 'I love you' hangs in the air, carried on the scent of buttery popcorn. The moment is quiet, perfect, yours.";
+        popcornOutcome.textContent = "Sometimes the moment matters more than the game.";
     }
     
     if (sharedBonus) {
@@ -1273,18 +1128,9 @@ function skipCinema() {
 
 // Reset game state
 function resetPopcornGame() {
-    console.log("Resetting game...");
-    
     popcornGameActive = false;
     currentRound = 0;
     perfectGrabs = 0;
-    totalReactionTime = 0;
-    roundStartTime = 0;
-    playerReactionTime = 0;
-    
-    // Clear timeouts
-    clearTimeout(signalTimeout);
-    clearTimeout(roundTimeout);
     
     // Reset UI
     if (signalLight) {
@@ -1293,234 +1139,54 @@ function resetPopcornGame() {
     }
     
     if (signalText) {
-        signalText.textContent = "Waiting for signal...";
+        signalText.textContent = "Waiting to start...";
     }
     
     if (grabBtn) {
         grabBtn.disabled = true;
         grabBtn.classList.remove('active');
+        grabBtn.textContent = "🍿 WAITING...";
     }
     
     if (startGameBtn) startGameBtn.disabled = false;
-    if (restartBtn) restartBtn.disabled = true;
     
-    if (roundCounter) roundCounter.textContent = "1/5";
-    if (perfectGrabsDisplay) {
-        perfectGrabsDisplay.textContent = "0";
-        perfectGrabsDisplay.style.color = '';
-    }
-    
-    if (timingScoreDisplay) {
-        timingScoreDisplay.textContent = "0%";
-        timingScoreDisplay.style.color = '';
-    }
-    
-    // Generate popcorn pieces
-    if (popcornPieces) {
-        generatePopcornPieces();
-    }
-    
-    showFeedback("Click 'Start Game' to begin!", "normal");
-    
-    console.log("Game reset complete");
+    if (roundCounter) roundCounter.textContent = "0/5";
+    if (perfectGrabsDisplay) perfectGrabsDisplay.textContent = "0";
 }
 
-// Update goTo function for popcorn game
-function goTo(id) {
-  lastScreen = currentScreen;
-  currentScreen = id;
+// Start popcorn game from intro
+function startPopcornGameIntro() {
+    const cinemaStart = document.getElementById('cinema-start');
+    const popcornGame = document.getElementById('popcorn-game');
+    
+    if (cinemaStart) cinemaStart.classList.add('hidden');
+    if (popcornGame) popcornGame.classList.remove('hidden');
+    
+    initPopcornGame();
+}
 
-  document.querySelectorAll(".screen").forEach(s => {
-    s.classList.remove("active");
-    s.classList.add("hidden");
-  });
-
-  const screen = document.getElementById(id);
-  screen.classList.remove("hidden");
-  
-  setTimeout(() => {
-    screen.classList.add("active");
-    initHUD();
-  }, 10);
-
-  updateDialogue(id);
-  
-  if (id === "fnaf") startFnafGame();
-  if (id === "bakery") initBakery();
-  if (id === "materialists") {
-    setTimeout(() => {
-      const cinemaStart = document.getElementById('cinema-start');
-      const popcornGame = document.getElementById('popcorn-game');
-      const outcomeScreen = document.getElementById('cinema-outcome');
-      
-      if (cinemaStart) cinemaStart.classList.remove('hidden');
-      if (popcornGame) popcornGame.classList.add('hidden');
-      if (outcomeScreen) outcomeScreen.classList.add('hidden');
-      
-      resetPopcornGame();
-      initPopcornGame();
-    }, 100);
-  }
+// Restart from outcome
+function restartPopcornGameFromOutcome() {
+    const outcomeScreen = document.getElementById('cinema-outcome');
+    const popcornGame = document.getElementById('popcorn-game');
+    
+    if (outcomeScreen) outcomeScreen.classList.add('hidden');
+    if (popcornGame) popcornGame.classList.remove('hidden');
+    
+    restartPopcornGame();
 }
 
 
-// ============================================
-// MOBILE SCROLLING & TOUCH SUPPORT
-// ============================================
 
-// Initialize mobile-friendly features
-function initMobileSupport() {
-    console.log("Initializing mobile support...");
-    
-    // Detect if mobile
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    
-    if (isMobile) {
-        console.log("Mobile device detected, applying mobile optimizations");
-        applyMobileOptimizations();
-    }
-    
-    // Prevent unwanted behaviors
-    preventUnwantedBehaviors();
-    
-    // Ensure proper scrolling
-    setupSmoothScrolling();
-}
 
-// Apply mobile-specific optimizations
-function applyMobileOptimizations() {
-    // Add mobile-specific classes
-    document.body.classList.add('mobile-device');
-    
-    // Make sure game area is properly sized
-    const gameArea = document.getElementById('popcorn-game');
-    if (gameArea) {
-        gameArea.classList.add('mobile-game');
-    }
-    
-    // Adjust button sizes for touch
-    const buttons = document.querySelectorAll('button');
-    buttons.forEach(button => {
-        button.classList.add('mobile-touch-target');
-    });
-    
-    // Log viewport info for debugging
-    console.log(`Viewport: ${window.innerWidth}x${window.innerHeight}`);
-    console.log(`Device Pixel Ratio: ${window.devicePixelRatio}`);
-}
 
-// Prevent unwanted mobile behaviors
-function preventUnwantedBehaviors() {
-    // Prevent zoom on double-tap
-    document.addEventListener('dblclick', function(e) {
-        e.preventDefault();
-    }, { passive: false });
-    
-    // Prevent pull-to-refresh on game area
-    document.addEventListener('touchmove', function(e) {
-        const gameArea = document.getElementById('popcorn-game');
-        if (gameArea && gameArea.contains(e.target)) {
-            e.preventDefault();
-        }
-    }, { passive: false });
-    
-    // Prevent text selection during gameplay
-    document.addEventListener('selectstart', function(e) {
-        if (popcornGameActive) {
-            e.preventDefault();
-        }
-    });
-}
 
-// Setup smooth scrolling
-function setupSmoothScrolling() {
-    // Make sure we can scroll to see all content
-    window.addEventListener('load', function() {
-        setTimeout(scrollToTop, 100);
-    });
-    
-    // Handle orientation changes
-    window.addEventListener('orientationchange', function() {
-        setTimeout(function() {
-            scrollToTop();
-            window.scrollTo(0, 0);
-        }, 300);
-    });
-    
-    // Handle resize
-    let resizeTimeout;
-    window.addEventListener('resize', function() {
-        clearTimeout(resizeTimeout);
-        resizeTimeout = setTimeout(function() {
-            scrollToTop();
-        }, 250);
-    });
-}
 
-// Scroll to top of current screen
-function scrollToTop() {
-    const currentScreen = document.querySelector('.screen.active');
-    if (currentScreen) {
-        currentScreen.scrollTop = 0;
-    }
-}
 
-// Update grab button for better touch support
-function setupTouchControls() {
-    const grabBtn = document.getElementById('grab-btn');
-    if (!grabBtn) return;
-    
-    // Remove any existing listeners
-    const newGrabBtn = grabBtn.cloneNode(true);
-    grabBtn.parentNode.replaceChild(newGrabBtn, grabBtn);
-    
-    // Add touch-friendly event listeners
-    newGrabBtn.addEventListener('touchstart', function(e) {
-        e.preventDefault();
-        this.classList.add('touch-active');
-        if (typeof handleGrabClick === 'function' && !this.disabled) {
-            handleGrabClick();
-        }
-    }, { passive: false });
-    
-    newGrabBtn.addEventListener('touchend', function(e) {
-        e.preventDefault();
-        this.classList.remove('touch-active');
-    }, { passive: false });
-    
-    // Also keep click for desktop
-    newGrabBtn.addEventListener('click', function(e) {
-        if (!/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
-            // Only handle click on non-touch devices
-            if (typeof handleGrabClick === 'function' && !this.disabled) {
-                handleGrabClick();
-            }
-        }
-    });
-}
 
-// Initialize when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    initMobileSupport();
-    
-    // Re-initialize when cinema screen is shown
-    const observer = new MutationObserver(function(mutations) {
-        mutations.forEach(function(mutation) {
-            if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-                const target = mutation.target;
-                if (target.id === 'materialists' && target.classList.contains('active')) {
-                    setTimeout(initMobileSupport, 100);
-                    setTimeout(setupTouchControls, 200);
-                }
-            }
-        });
-    });
-    
-    const materialistsScreen = document.getElementById('materialists');
-    if (materialistsScreen) {
-        observer.observe(materialistsScreen, { attributes: true });
-    }
-});
+
+
+
 
 
 
@@ -1538,24 +1204,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 // ============================================
-// LIGHT TRAIL GAME - ZOO LEVEL
+// FIXED LIGHT TRAIL GAME
 // ============================================
 
 // Game Variables
 let trailGameActive = false;
 let canvas, ctx;
 let isDrawing = false;
-let lastX = 0;
-let lastY = 0;
 let currentPattern = 'star';
-let currentPath = [];
 let allPaths = [];
 let guideVisible = false;
-let gameStarted = false;
-let currentAccuracy = 0;
-let currentWarmth = 50; // Starts at 50%
+let canvasScale = 1;
 
-// Pattern Definitions
+// Fixed Pattern Definitions
 const patterns = {
   star: {
     name: "Star",
@@ -1572,8 +1233,7 @@ const patterns = {
       {x: 20, y: 180},
       {x: 160, y: 180},
       {x: 200, y: 50}
-    ],
-    difficulty: 1.2
+    ]
   },
   heart: {
     name: "Heart",
@@ -1588,176 +1248,141 @@ const patterns = {
       {x: 80, y: 100},
       {x: 140, y: 50},
       {x: 200, y: 100}
-    ],
-    difficulty: 1.5
-  },
-  spiral: {
-    name: "Spiral",
-    icon: "🌀",
-    points: [],
-    difficulty: 1.8
-  },
-  snowflake: {
-    name: "Snowflake",
-    icon: "❄️",
-    points: [],
-    difficulty: 2.0
+    ]
   }
 };
 
-// Initialize the game
+// Initialize the game - FIXED
+// Initialize the game - FIXED
 function initTrailGame() {
-    console.log("Initializing Light Trail game...");
-    
     // Get canvas and context
     canvas = document.getElementById('light-canvas');
     ctx = canvas.getContext('2d');
     
-    // Set canvas size (adjust for mobile)
-    const container = canvas.parentElement;
+    // FIXED: Set proper canvas size
+    const container = document.querySelector('.drawing-area');
     if (container) {
         const rect = container.getBoundingClientRect();
         canvas.width = rect.width;
         canvas.height = rect.height;
+        canvasScale = 400 / canvas.width;
     } else {
         canvas.width = 400;
         canvas.height = 400;
+        canvasScale = 1;
     }
     
-    // Set up event listeners for drawing
+    // Fix for HiDPI displays
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = canvas.width * dpr;
+    canvas.height = canvas.height * dpr;
+    ctx.scale(dpr, dpr);
+    
+    // Set up event listeners
     setupDrawingEvents();
     
-    // Initialize pattern
-    generatePatternPoints();
+    // Select default pattern
     selectPattern('star');
     
     // Reset game state
     resetDrawing();
     
-    console.log("Light Trail game initialized");
+    // ✅ Make sure game is NOT active yet
+    trailGameActive = false;
+}
+// FIXED: Get correct canvas coordinates
+function getCanvasCoordinates(e) {
+    const rect = canvas.getBoundingClientRect();
+    
+    if (e.type.includes('touch')) {
+        // For touch events
+        const touch = e.touches[0] || e.changedTouches[0];
+        const x = (touch.clientX - rect.left) * (canvas.width / (rect.width * window.devicePixelRatio));
+        const y = (touch.clientY - rect.top) * (canvas.height / (rect.height * window.devicePixelRatio));
+        return { x, y };
+    } else {
+        // For mouse events
+        const x = (e.clientX - rect.left) * (canvas.width / (rect.width * window.devicePixelRatio));
+        const y = (e.clientY - rect.top) * (canvas.height / (rect.height * window.devicePixelRatio));
+        return { x, y };
+    }
 }
 
-// Set up drawing event listeners
+// Set up drawing event listeners - FIXED
 function setupDrawingEvents() {
     if (!canvas) return;
     
     // Clear existing listeners
-    canvas.removeEventListener('mousedown', startDrawingMouse);
-    canvas.removeEventListener('mousemove', drawMouse);
-    canvas.removeEventListener('mouseup', stopDrawingMouse);
-    canvas.removeEventListener('mouseleave', stopDrawingMouse);
-    
+    canvas.removeEventListener('mousedown', startDrawing);
+    canvas.removeEventListener('mousemove', draw);
+    canvas.removeEventListener('mouseup', stopDrawing);
     canvas.removeEventListener('touchstart', startDrawingTouch);
     canvas.removeEventListener('touchmove', drawTouch);
-    canvas.removeEventListener('touchend', stopDrawingTouch);
+    canvas.removeEventListener('touchend', stopDrawing);
     
     // Mouse events
-    canvas.addEventListener('mousedown', startDrawingMouse);
-    canvas.addEventListener('mousemove', drawMouse);
-    canvas.addEventListener('mouseup', stopDrawingMouse);
-    canvas.addEventListener('mouseleave', stopDrawingMouse);
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mouseleave', stopDrawing);
     
-    // Touch events
-    canvas.addEventListener('touchstart', startDrawingTouch, { passive: false });
-    canvas.addEventListener('touchmove', drawTouch, { passive: false });
-    canvas.addEventListener('touchend', stopDrawingTouch);
+    // Touch events - fixed to prevent scrolling
+    canvas.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        startDrawingTouch(e);
+    }, { passive: false });
     
-    // Prevent default touch behaviors
-    canvas.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
-    canvas.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
-}
-
-// Generate pattern points for spiral and snowflake
-function generatePatternPoints() {
-    // Generate spiral points
-    const spiralPoints = [];
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-    const maxRadius = Math.min(canvas.width, canvas.height) * 0.4;
+    canvas.addEventListener('touchmove', function(e) {
+        e.preventDefault();
+        drawTouch(e);
+    }, { passive: false });
     
-    for (let i = 0; i < 720; i += 5) {
-        const angle = i * (Math.PI / 180);
-        const radius = maxRadius * (i / 720);
-        spiralPoints.push({
-            x: centerX + radius * Math.cos(angle),
-            y: centerY + radius * Math.sin(angle)
-        });
-    }
-    patterns.spiral.points = spiralPoints;
-    
-    // Generate snowflake points
-    const snowflakePoints = [];
-    const radius = maxRadius * 0.8;
-    const branches = 6;
-    
-    for (let i = 0; i < 360; i += 30) {
-        const angle = i * (Math.PI / 180);
-        snowflakePoints.push({
-            x: centerX,
-            y: centerY
-        });
-        snowflakePoints.push({
-            x: centerX + radius * Math.cos(angle),
-            y: centerY + radius * Math.sin(angle)
-        });
-        snowflakePoints.push({
-            x: centerX + radius * 0.6 * Math.cos(angle + 0.3),
-            y: centerY + radius * 0.6 * Math.sin(angle + 0.3)
-        });
-        snowflakePoints.push({
-            x: centerX + radius * 0.6 * Math.cos(angle - 0.3),
-            y: centerY + radius * 0.6 * Math.sin(angle - 0.3)
-        });
-    }
-    patterns.snowflake.points = snowflakePoints;
+    canvas.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        stopDrawing();
+    }, { passive: false });
 }
 
 // Start Zoo Game
+// Start Zoo Game
 function startZooGame() {
-    console.log("Starting Zoo game...");
     const startScreen = document.getElementById('zoo-start');
     const trailGame = document.getElementById('trail-game');
     
     if (startScreen) startScreen.classList.add('hidden');
     if (trailGame) trailGame.classList.remove('hidden');
     
+    // ✅ Reset game state FIRST
+    trailGameActive = false;
+    allPaths = [];
+    guideVisible = false;
+    
     // Initialize the game
     setTimeout(initTrailGame, 100);
-    
-    // Update dialogue
-    updateTrailDialogue("Trace the pattern in the frosty air... I'll watch your hands.");
 }
 
-// Start the actual drawing game
-function startTrailGame() {
-    if (trailGameActive) return;
-    
-    console.log("Starting Light Trail drawing...");
-    trailGameActive = true;
-    gameStarted = true;
-    
-    // Update UI
-    const startBtn = document.getElementById('start-game-btn');
-    if (startBtn) {
-        startBtn.disabled = true;
-        startBtn.style.opacity = '0.5';
-        startBtn.style.cursor = 'not-allowed';
-    }
-    document.getElementById('check-btn').disabled = false;
-    
-    // Clear canvas
+
+// Reset drawing state
+function resetDrawing() {
+    allPaths = [];
     clearCanvas();
     
-    // Draw guide if enabled
-    if (guideVisible) {
-        drawGuidePattern();
+    document.getElementById('check-btn').disabled = true;
+    document.getElementById('check-btn').textContent = "✨ Check My Pattern";
+    document.getElementById('check-btn').onclick = checkDrawing;
+    
+    const startBtn = document.getElementById('start-game-btn');
+    if (startBtn) {
+        startBtn.disabled = false;
+        startBtn.textContent = "Begin Drawing";
+        startBtn.style.display = 'inline-block'; // ✅ Show start button
     }
     
-    // Update instructions
-    document.getElementById('draw-instructions').textContent = "Trace the pattern! Take your time...";
-    
-    // Update dialogue
-    updateTrailDialogue("Beautiful... your lines are like light itself.");
+    // ✅ Hide redo button when resetting
+    const redoBtn = document.getElementById('redo-btn');
+    if (redoBtn) {
+        redoBtn.style.display = 'none';
+    }
 }
 
 // Select a pattern
@@ -1776,63 +1401,13 @@ function selectPattern(pattern) {
     });
     document.querySelector(`[data-pattern="${pattern}"]`).classList.add('active');
     
-    // Draw preview
-    drawPatternPreview(pattern);
-    
     // Reset drawing if game is active
     if (trailGameActive) {
         resetDrawing();
     }
-    
-    console.log(`Selected pattern: ${pattern}`);
 }
 
-// Draw pattern preview
-function drawPatternPreview(pattern) {
-    const preview = document.getElementById('pattern-preview');
-    if (!preview) return;
-    
-    const patternInfo = patterns[pattern];
-    
-    // Clear preview
-    preview.innerHTML = '';
-    
-    // Create SVG
-    const svgNS = "http://www.w3.org/2000/svg";
-    const svg = document.createElementNS(svgNS, "svg");
-    svg.setAttribute("viewBox", "0 0 400 400");
-    svg.setAttribute("width", "120");
-    svg.setAttribute("height", "120");
-    
-    // Create path
-    const path = document.createElementNS(svgNS, "path");
-    let pathData = '';
-    
-    patternInfo.points.forEach((point, index) => {
-        if (index === 0) {
-            pathData += `M ${point.x} ${point.y}`;
-        } else {
-            pathData += ` L ${point.x} ${point.y}`;
-        }
-    });
-    
-    // Close the path if it's not a spiral
-    if (pattern !== 'spiral') {
-        pathData += ' Z';
-    }
-    
-    path.setAttribute("d", pathData);
-    path.setAttribute("fill", "none");
-    path.setAttribute("stroke", "#87CEEB");
-    path.setAttribute("stroke-width", "3");
-    path.setAttribute("stroke-linecap", "round");
-    path.setAttribute("stroke-linejoin", "round");
-    
-    svg.appendChild(path);
-    preview.appendChild(svg);
-}
-
-// Draw guide pattern on canvas
+// Draw guide pattern on canvas - FIXED
 function drawGuidePattern() {
     if (!ctx || !patterns[currentPattern]) return;
     
@@ -1840,9 +1415,10 @@ function drawGuidePattern() {
     ctx.save();
     ctx.beginPath();
     
+    // Scale pattern points to current canvas size
     pattern.points.forEach((point, index) => {
-        const scaledX = point.x * (canvas.width / 400);
-        const scaledY = point.y * (canvas.height / 400);
+        const scaledX = point.x * (canvas.width / (400 * window.devicePixelRatio));
+        const scaledY = point.y * (canvas.height / (400 * window.devicePixelRatio));
         
         if (index === 0) {
             ctx.moveTo(scaledX, scaledY);
@@ -1851,10 +1427,7 @@ function drawGuidePattern() {
         }
     });
     
-    if (currentPattern !== 'spiral') {
-        ctx.closePath();
-    }
-    
+    ctx.closePath();
     ctx.strokeStyle = 'rgba(135, 206, 235, 0.3)';
     ctx.lineWidth = 2;
     ctx.stroke();
@@ -1884,141 +1457,86 @@ function toggleGuide() {
     }
 }
 
-// Mouse drawing functions
-function startDrawingMouse(e) {
-    if (!trailGameActive || !gameStarted) return;
+// Drawing functions - FIXED
+function startDrawing(e) {
+    if (!trailGameActive) return;
     
-    const rect = canvas.getBoundingClientRect();
-    lastX = e.clientX - rect.left;
-    lastY = e.clientY - rect.top;
+    const { x, y } = getCanvasCoordinates(e);
     isDrawing = true;
     
-    currentPath = [{x: lastX, y: lastY}];
-    allPaths.push(currentPath);
+    allPaths.push([{x, y}]);
     
     ctx.beginPath();
-    ctx.moveTo(lastX, lastY);
+    ctx.moveTo(x, y);
 }
 
-function drawMouse(e) {
-    if (!isDrawing) return;
-    
-    const rect = canvas.getBoundingClientRect();
-    const currentX = e.clientX - rect.left;
-    const currentY = e.clientY - rect.top;
-    
-    drawLine(lastX, lastY, currentX, currentY);
-    
-    lastX = currentX;
-    lastY = currentY;
-    currentPath.push({x: currentX, y: currentY});
-    
-    // Increase warmth slightly while drawing
-    if (currentWarmth < 100) {
-        currentWarmth = Math.min(100, currentWarmth + 0.1);
-        updateWarmthDisplay();
-    }
-}
-
-function stopDrawingMouse() {
-    if (!isDrawing) return;
-    
-    isDrawing = false;
-    ctx.closePath();
-    
-    // Decrease warmth slightly when stopping
-    currentWarmth = Math.max(50, currentWarmth - 0.5);
-    updateWarmthDisplay();
-}
-
-// Touch drawing functions
 function startDrawingTouch(e) {
-    if (!trailGameActive || !gameStarted) return;
+    if (!trailGameActive) return;
     
-    e.preventDefault();
-    const touch = e.touches[0];
-    const rect = canvas.getBoundingClientRect();
-    
-    lastX = touch.clientX - rect.left;
-    lastY = touch.clientY - rect.top;
+    const { x, y } = getCanvasCoordinates(e);
     isDrawing = true;
     
-    currentPath = [{x: lastX, y: lastY}];
-    allPaths.push(currentPath);
+    allPaths.push([{x, y}]);
     
     ctx.beginPath();
-    ctx.moveTo(lastX, lastY);
+    ctx.moveTo(x, y);
+}
+
+function draw(e) {
+    if (!isDrawing) return;
+    
+    const { x, y } = getCanvasCoordinates(e);
+    
+    drawLine(x, y);
+    
+    allPaths[allPaths.length - 1].push({x, y});
 }
 
 function drawTouch(e) {
     if (!isDrawing) return;
     
-    e.preventDefault();
-    const touch = e.touches[0];
-    const rect = canvas.getBoundingClientRect();
+    const { x, y } = getCanvasCoordinates(e);
     
-    const currentX = touch.clientX - rect.left;
-    const currentY = touch.clientY - rect.top;
+    drawLine(x, y);
     
-    drawLine(lastX, lastY, currentX, currentY);
-    
-    lastX = currentX;
-    lastY = currentY;
-    currentPath.push({x: currentX, y: currentY});
-    
-    // Increase warmth slightly while drawing
-    if (currentWarmth < 100) {
-        currentWarmth = Math.min(100, currentWarmth + 0.1);
-        updateWarmthDisplay();
-    }
+    allPaths[allPaths.length - 1].push({x, y});
 }
 
-function stopDrawingTouch() {
-    if (!isDrawing) return;
-    
-    isDrawing = false;
-    ctx.closePath();
-    
-    // Decrease warmth slightly when stopping
-    currentWarmth = Math.max(50, currentWarmth - 0.5);
-    updateWarmthDisplay();
-}
-
-// Draw a line between points
-function drawLine(x1, y1, x2, y2) {
+function drawLine(x, y) {
     ctx.lineWidth = 3;
     ctx.lineCap = 'round';
-    ctx.strokeStyle = `rgba(135, 206, 235, ${0.7 + Math.random() * 0.3})`;
+    ctx.strokeStyle = `rgba(135, 206, 235, 0.8)`;
     
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
+    ctx.lineTo(x, y);
     ctx.stroke();
     
-    // Add a glow effect
-    ctx.shadowColor = 'rgba(135, 206, 235, 0.8)';
-    ctx.shadowBlur = 10;
+    // Add glow effect
+    ctx.shadowColor = 'rgba(135, 206, 235, 0.5)';
+    ctx.shadowBlur = 5;
     ctx.stroke();
     ctx.shadowBlur = 0;
 }
 
-// Clear canvas
+function stopDrawing() {
+    if (!isDrawing) return;
+    
+    isDrawing = false;
+    ctx.closePath();
+}
+
+// Clear canvas - FIXED
 function clearCanvas() {
     if (!ctx) return;
     
+    // Clear with background
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
     // Draw a dark background
     ctx.fillStyle = 'rgba(5, 15, 30, 0.9)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    // Draw grid lines
+    // Draw subtle grid for reference
     drawGrid();
-    
-    // Redraw guide if visible
-    if (guideVisible) {
-        drawGuidePattern();
-    }
 }
 
 // Draw grid for reference
@@ -2026,8 +1544,12 @@ function drawGrid() {
     ctx.strokeStyle = 'rgba(135, 206, 235, 0.1)';
     ctx.lineWidth = 1;
     
+    // Scale grid to canvas
+    const stepX = canvas.width / (8 * window.devicePixelRatio);
+    const stepY = canvas.height / (8 * window.devicePixelRatio);
+    
     // Vertical lines
-    for (let x = 0; x <= canvas.width; x += 50) {
+    for (let x = 0; x <= canvas.width; x += stepX) {
         ctx.beginPath();
         ctx.moveTo(x, 0);
         ctx.lineTo(x, canvas.height);
@@ -2035,7 +1557,7 @@ function drawGrid() {
     }
     
     // Horizontal lines
-    for (let y = 0; y <= canvas.height; y += 50) {
+    for (let y = 0; y <= canvas.height; y += stepY) {
         ctx.beginPath();
         ctx.moveTo(0, y);
         ctx.lineTo(canvas.width, y);
@@ -2043,7 +1565,7 @@ function drawGrid() {
     }
 }
 
-// Redraw all user paths
+// Redraw all user paths - FIXED
 function redrawUserPaths() {
     if (!ctx || allPaths.length === 0) return;
     
@@ -2061,12 +1583,6 @@ function redrawUserPaths() {
         ctx.lineCap = 'round';
         ctx.strokeStyle = 'rgba(135, 206, 235, 0.8)';
         ctx.stroke();
-        
-        // Glow effect
-        ctx.shadowColor = 'rgba(135, 206, 235, 0.5)';
-        ctx.shadowBlur = 8;
-        ctx.stroke();
-        ctx.shadowBlur = 0;
     });
 }
 
@@ -2076,172 +1592,53 @@ function undoLastStroke() {
     
     allPaths.pop();
     clearCanvas();
+    if (guideVisible) drawGuidePattern();
     redrawUserPaths();
-    
-    // Update dialogue
-    updateTrailDialogue("That's okay... try again.");
 }
 
 // Clear drawing
 function clearDrawing() {
     allPaths = [];
-    currentPath = [];
     clearCanvas();
-    
-    // Update dialogue
-    updateTrailDialogue("Fresh start... I believe in you.");
+    if (guideVisible) drawGuidePattern();
 }
 
-// Check drawing accuracy
+// Check drawing accuracy - FIXED
 function checkDrawing() {
     if (allPaths.length === 0) {
-        updateTrailDialogue("You haven't drawn anything yet!");
+        alert("You haven't drawn anything yet! Try tracing the pattern first.");
         return;
     }
     
-    console.log("Checking drawing accuracy...");
+    // ✅ Stop the game from allowing more drawing
+    trailGameActive = false;
     
-    // Calculate accuracy
+    // Calculate accuracy (FIXED - now actually checks pattern)
     const accuracy = calculateAccuracy();
-    currentAccuracy = accuracy;
     
     // Update display
     updateAccuracyDisplay(accuracy);
     
-    // Calculate warmth gain based on accuracy
-    const warmthGain = Math.floor(accuracy / 10);
-    currentWarmth = Math.min(100, currentWarmth + warmthGain);
-    updateWarmthDisplay();
-    
-    // Update dialogue based on accuracy
-    if (accuracy >= 80) {
-        updateTrailDialogue("Perfect! The lights seem to dance in approval.");
-    } else if (accuracy >= 60) {
-        updateTrailDialogue("Very good! You captured the essence beautifully.");
-    } else if (accuracy >= 40) {
-        updateTrailDialogue("Not bad! With practice, you'll get even better.");
-    } else {
-        updateTrailDialogue("A good attempt! The pattern was quite challenging.");
-    }
-    
-    // Enable continue to outcome
-    setTimeout(() => {
-        document.getElementById('check-btn').textContent = "✨ See Results";
-        document.getElementById('check-btn').onclick = finishTrailGame;
-    }, 1000);
+    // ✅ Change check button to show results
+    const checkBtn = document.getElementById('check-btn');
+    checkBtn.textContent = "✨ See Results";
+    checkBtn.onclick = function() {
+        finishTrailGame(accuracy);
+    };
 }
-
-// Calculate accuracy - FIXED VERSION
-function calculateAccuracy() {
-    const pattern = patterns[currentPattern];
-    const patternPoints = pattern.points;
-    
-    if (patternPoints.length === 0 || allPaths.length === 0) return 0;
-    
-    // Flatten all user paths into single array
-    let userPoints = [];
-    allPaths.forEach(path => {
-        userPoints = userPoints.concat(path);
-    });
-    
-    if (userPoints.length < 10) return 15; // Too few points drawn
-    
-    // Scale pattern points to canvas size
-    const scaleX = canvas.width / 400;
-    const scaleY = canvas.height / 400;
-    const scaledPattern = patternPoints.map(p => ({
-        x: p.x * scaleX,
-        y: p.y * scaleY
-    }));
-    
-    // Calculate average distance from user points to nearest pattern points
-    let totalDistance = 0;
-    let checkedPoints = Math.min(userPoints.length, 100); // Sample up to 100 points
-    let step = Math.max(1, Math.floor(userPoints.length / checkedPoints));
-    
-    for (let i = 0; i < userPoints.length; i += step) {
-        const userPoint = userPoints[i];
-        
-        // Find nearest pattern point
-        let minDist = Infinity;
-        for (let j = 0; j < scaledPattern.length; j++) {
-            const patternPoint = scaledPattern[j];
-            const dx = userPoint.x - patternPoint.x;
-            const dy = userPoint.y - patternPoint.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            
-            if (dist < minDist) {
-                minDist = dist;
-            }
-        }
-        
-        totalDistance += minDist;
-    }
-    
-    const avgDistance = totalDistance / checkedPoints;
-    
-    // Calculate accuracy based on average distance
-    // Closer = higher accuracy
-    const maxAllowedDistance = Math.min(canvas.width, canvas.height) * 0.3;
-    let accuracy = Math.max(0, 100 - (avgDistance / maxAllowedDistance) * 100);
-    
-    // Apply pattern difficulty multiplier
-    accuracy = accuracy / pattern.difficulty;
-    
-    // Add small bonus if they drew enough points
-    if (userPoints.length > patternPoints.length * 0.5) {
-        accuracy += 10;
-    }
-    
-    // Cap between 0-95
-    accuracy = Math.max(0, Math.min(95, accuracy));
-    
-    return Math.round(accuracy);
-}
-
-// Update accuracy display
-function updateAccuracyDisplay(accuracy) {
-    const accuracyValue = document.getElementById('accuracy-value');
-    const accuracyFill = document.getElementById('accuracy-fill');
-    
-    if (accuracyValue) accuracyValue.textContent = `${accuracy}%`;
-    if (accuracyFill) accuracyFill.style.width = `${accuracy}%`;
-    
-    // Color based on accuracy
-    if (accuracy >= 80) {
-        accuracyFill.style.background = 'linear-gradient(90deg, #F44336, #FF9800, #4CAF50)';
-    } else if (accuracy >= 60) {
-        accuracyFill.style.background = 'linear-gradient(90deg, #F44336, #FF9800)';
-    } else {
-        accuracyFill.style.background = '#F44336';
-    }
-}
-
-// Update warmth display
-function updateWarmthDisplay() {
-    const warmthValue = document.getElementById('warmth-value');
-    if (warmthValue) {
-        warmthValue.textContent = `${Math.round(currentWarmth)}%`;
-        
-        // Color based on warmth
-        if (currentWarmth >= 80) {
-            warmthValue.style.color = '#FF9800';
-        } else if (currentWarmth >= 60) {
-            warmthValue.style.color = '#FFB74D';
-        } else {
-            warmthValue.style.color = '#87CEEB';
-        }
-    }
-}
-
 // Finish game and show outcome
-function finishTrailGame() {
-    console.log("Finishing Light Trail game...");
+function finishTrailGame(accuracy) {
+    // ✅ Check if accuracy is below 50% - send to death screen
+    if (accuracy < 50) {
+        // Set HP to 0 and go directly to death screen
+        hp = 0;
+        updateHP();
+        die();
+        return; // Stop execution here
+    }
     
-    // Calculate final HP bonus
-    const accuracyBonus = Math.floor(currentAccuracy / 4); // Up to 25 HP
-    const warmthBonus = Math.floor(currentWarmth / 4); // Up to 25 HP
-    const totalBonus = accuracyBonus + warmthBonus;
+    // Calculate HP bonus based on accuracy
+    const hpBonus = Math.floor(accuracy / 3); // Up to ~30 HP
     
     // Show outcome screen
     const trailGame = document.getElementById('trail-game');
@@ -2251,134 +1648,187 @@ function finishTrailGame() {
     if (outcomeScreen) outcomeScreen.classList.remove('hidden');
     
     // Update outcome display
-    document.getElementById('final-accuracy').textContent = `${currentAccuracy}%`;
-    document.getElementById('final-warmth').textContent = `+${Math.round(currentWarmth - 50)}%`;
-    document.getElementById('chocolate-bonus').textContent = `+${totalBonus} HP`;
+    document.getElementById('final-accuracy').textContent = `${accuracy}%`;
+    document.getElementById('chocolate-bonus').textContent = `+${hpBonus} HP`;
     
     // Update outcome text
     const outcomeText = document.getElementById('light-outcome');
     if (outcomeText) {
-        if (currentAccuracy >= 80 && currentWarmth >= 80) {
-            outcomeText.textContent = "Your drawing was perfect! The lights shimmered in perfect sync with your movements. Your companion's hand finds yours, warmer than any fire.";
-        } else if (currentAccuracy >= 60) {
-            outcomeText.textContent = "A beautiful attempt! The lights twinkled in appreciation. Your shared warmth makes the cold night feel cozy.";
+        if (accuracy >= 80) {
+            outcomeText.textContent = "Perfect! The lights shimmered in perfect sync with your movements. Your drawing captured the pattern beautifully.";
+        } else if (accuracy >= 60) {
+            outcomeText.textContent = "Great job! The lights twinkled in appreciation. You traced most of the pattern well.";
         } else {
-            outcomeText.textContent = "The effort was what mattered most. In the shared laughter over wobbly lines, you found more warmth than any perfect drawing could provide.";
+            outcomeText.textContent = "Good attempt! You captured the essence of the pattern. With practice, you'll get even better.";
         }
     }
-    
-    // Draw final pattern in outcome
-    drawFinalPattern();
     
     // Award HP
-    heal(totalBonus);
-    
-    console.log(`Game completed. Accuracy: ${currentAccuracy}%, Warmth: ${currentWarmth}%, HP Bonus: ${totalBonus}`);
+    heal(hpBonus);
 }
 
-// Draw final pattern in outcome screen
-function drawFinalPattern() {
-    const finalPattern = document.getElementById('final-pattern-display');
-    if (!finalPattern) return;
+// Start the actual drawing game
+function startTrailGame() {
+    if (trailGameActive) return;
     
-    finalPattern.innerHTML = '';
+    trailGameActive = true;
     
-    // Create SVG
-    const svgNS = "http://www.w3.org/2000/svg";
-    const svg = document.createElementNS(svgNS, "svg");
-    svg.setAttribute("viewBox", "0 0 400 400");
-    svg.setAttribute("width", "200");
-    svg.setAttribute("height", "200");
-    
-    // Draw target pattern
-    const targetPath = document.createElementNS(svgNS, "path");
-    const pattern = patterns[currentPattern];
-    let pathData = '';
-    
-    pattern.points.forEach((point, index) => {
-        if (index === 0) {
-            pathData += `M ${point.x} ${point.y}`;
-        } else {
-            pathData += ` L ${point.x} ${point.y}`;
-        }
-    });
-    
-    if (currentPattern !== 'spiral') {
-        pathData += ' Z';
+    // Update UI
+    const startBtn = document.getElementById('start-game-btn');
+    if (startBtn) {
+        startBtn.disabled = true;
+        startBtn.textContent = "Drawing Active";
     }
     
-    targetPath.setAttribute("d", pathData);
-    targetPath.setAttribute("fill", "none");
-    targetPath.setAttribute("stroke", "rgba(135, 206, 235, 0.3)");
-    targetPath.setAttribute("stroke-width", "3");
-    targetPath.setAttribute("stroke-linecap", "round");
-    targetPath.setAttribute("stroke-linejoin", "round");
+    document.getElementById('check-btn').disabled = false;
     
-    svg.appendChild(targetPath);
+    // Clear canvas
+    clearCanvas();
     
-    // Draw user's path (simplified)
-    const userPath = document.createElementNS(svgNS, "path");
-    if (allPaths.length > 0 && allPaths[0].length > 0) {
-        let userPathData = `M ${allPaths[0][0].x * (400/canvas.width)} ${allPaths[0][0].y * (400/canvas.height)}`;
-        
-        allPaths.forEach(path => {
-            path.forEach((point, index) => {
-                if (index > 0) {
-                    userPathData += ` L ${point.x * (400/canvas.width)} ${point.y * (400/canvas.height)}`;
-                }
-            });
-        });
-        
-        userPath.setAttribute("d", userPathData);
-        userPath.setAttribute("fill", "none");
-        userPath.setAttribute("stroke", "#87CEEB");
-        userPath.setAttribute("stroke-width", "2");
-        userPath.setAttribute("stroke-linecap", "round");
-        svg.appendChild(userPath);
+    // Draw guide if enabled
+    if (guideVisible) {
+        drawGuidePattern();
     }
     
-    finalPattern.appendChild(svg);
-}
-
-// Update trail dialogue
-function updateTrailDialogue(text) {
-    const dialogue = document.getElementById('trail-dialogue');
-    if (dialogue) {
-        dialogue.textContent = `"${text}"`;
-    }
+    document.getElementById('draw-instructions').textContent = "Trace the pattern! Release to finish.";
 }
 
 // Reset drawing state
 function resetDrawing() {
     allPaths = [];
-    currentPath = [];
-    currentAccuracy = 0;
-    currentWarmth = 50;
-    
-    updateAccuracyDisplay(0);
-    updateWarmthDisplay();
     clearCanvas();
     
     document.getElementById('check-btn').disabled = true;
     document.getElementById('check-btn').textContent = "✨ Check My Pattern";
     document.getElementById('check-btn').onclick = checkDrawing;
+    
+    const startBtn = document.getElementById('start-game-btn');
+    if (startBtn) {
+        startBtn.disabled = false;
+        startBtn.textContent = "Begin Drawing";
+    }
 }
 
-// Replay game - REMOVED (no longer used)
-// function replayTrailGame() {
-//     const outcomeScreen = document.getElementById('zoo-outcome');
-//     const trailGame = document.getElementById('trail-game');
-//     
-//     if (outcomeScreen) outcomeScreen.classList.add('hidden');
-//     if (trailGame) trailGame.classList.remove('hidden');
-//     
-//     restartDrawing();
-//     startTrailGame();
-// }
+
+
+
+function calculateAccuracy() {
+    const pattern = patterns[currentPattern];
+    if (!pattern || allPaths.length === 0) return 0;
+    
+    // Flatten user points
+    let userPoints = [];
+    allPaths.forEach(path => {
+        userPoints = userPoints.concat(path);
+    });
+    
+    if (userPoints.length < 10) return 20;
+    
+    // Scale pattern
+    const scaledPattern = pattern.points.map(p => ({
+        x: p.x * (canvas.width / (400 * window.devicePixelRatio)),
+        y: p.y * (canvas.height / (400 * window.devicePixelRatio))
+    }));
+    
+    // Create line segments from pattern
+    let patternSegments = [];
+    for (let i = 0; i < scaledPattern.length - 1; i++) {
+        patternSegments.push({
+            start: scaledPattern[i],
+            end: scaledPattern[i + 1]
+        });
+    }
+    
+    // Check coverage of each segment
+    const threshold = 15; // pixels
+    let segmentCoverage = new Array(patternSegments.length).fill(0);
+    
+    userPoints.forEach(point => {
+        patternSegments.forEach((segment, idx) => {
+            const dist = pointToSegmentDistance(point, segment.start, segment.end);
+            if (dist < threshold) {
+                segmentCoverage[idx]++;
+            }
+        });
+    });
+    
+    // Calculate how well each segment was traced
+    let totalCoverage = 0;
+    segmentCoverage.forEach(coverage => {
+        // Each segment should have at least 5 points near it
+        totalCoverage += Math.min(100, (coverage / 5) * 100);
+    });
+    
+    let accuracy = totalCoverage / patternSegments.length;
+    
+    // Cap between 20-95
+    return Math.max(20, Math.min(95, Math.round(accuracy)));
+}
+
+// Helper: distance from point to line segment
+function pointToSegmentDistance(point, segStart, segEnd) {
+    const dx = segEnd.x - segStart.x;
+    const dy = segEnd.y - segStart.y;
+    const lengthSquared = dx * dx + dy * dy;
+    
+    if (lengthSquared === 0) {
+        // Segment is a point
+        const pdx = point.x - segStart.x;
+        const pdy = point.y - segStart.y;
+        return Math.sqrt(pdx * pdx + pdy * pdy);
+    }
+    
+    // Find projection of point onto line
+    let t = ((point.x - segStart.x) * dx + (point.y - segStart.y) * dy) / lengthSquared;
+    t = Math.max(0, Math.min(1, t)); // Clamp to segment
+    
+    const projX = segStart.x + t * dx;
+    const projY = segStart.y + t * dy;
+    
+    const distX = point.x - projX;
+    const distY = point.y - projY;
+    
+    return Math.sqrt(distX * distX + distY * distY);
+}
+
+// Update accuracy display
+function updateAccuracyDisplay(accuracy) {
+    const accuracyValue = document.getElementById('accuracy-value');
+    const accuracyFill = document.getElementById('accuracy-fill');
+    
+    if (accuracyValue) accuracyValue.textContent = `${accuracy}%`;
+    if (accuracyFill) {
+        accuracyFill.style.width = `${accuracy}%`;
+        // Color based on accuracy
+        if (accuracy >= 80) {
+            accuracyFill.style.background = 'linear-gradient(90deg, #F44336, #FF9800, #4CAF50)';
+        } else if (accuracy >= 60) {
+            accuracyFill.style.background = 'linear-gradient(90deg, #F44336, #FF9800)';
+        } else {
+            accuracyFill.style.background = '#F44336';
+        }
+    }
+}
+
+
+// Reset drawing state
+function resetDrawing() {
+    allPaths = [];
+    clearCanvas();
+    
+    document.getElementById('check-btn').disabled = true;
+    document.getElementById('check-btn').textContent = "✨ Check My Pattern";
+    document.getElementById('check-btn').onclick = checkDrawing;
+    
+    const startBtn = document.getElementById('start-game-btn');
+    if (startBtn) {
+        startBtn.disabled = false;
+        startBtn.textContent = "Begin Drawing";
+    }
+}
 
 // Skip to chocolate
 function skipToChocolate() {
-    console.log("Skipping to hot chocolate...");
     const startScreen = document.getElementById('zoo-start');
     const outcomeScreen = document.getElementById('zoo-outcome');
     
@@ -2390,11 +1840,10 @@ function skipToChocolate() {
     
     // Update outcome for skip
     document.getElementById('final-accuracy').textContent = "Skipped";
-    document.getElementById('final-warmth').textContent = "+0%";
     document.getElementById('chocolate-bonus').textContent = "+15 HP";
     
     document.getElementById('light-outcome').textContent = 
-        "Sometimes the warmest moments don't need perfect patterns. The simple act of being together, hot chocolates in hand, says everything that needs to be said.";
+        "Sometimes the warmest moments don't need perfect patterns. The simple act of being together, hot chocolates in hand, says everything.";
 }
 
 // Just get chocolate
@@ -2407,55 +1856,4 @@ function justGetChocolate() {
 function getTooCold() {
     damage(20);
     goTo('fnaf');
-}
-
-// Update goTo function for zoo level
-function goTo(id) {
-    lastScreen = currentScreen;
-    currentScreen = id;
-
-    document.querySelectorAll(".screen").forEach(s => {
-        s.classList.remove("active");
-        s.classList.add("hidden");
-    });
-
-    const screen = document.getElementById(id);
-    screen.classList.remove("hidden");
-    
-    setTimeout(() => {
-        screen.classList.add("active");
-        initHUD();
-    }, 10);
-
-    updateDialogue(id);
-    
-    if (id === "fnaf") startFnafGame();
-    if (id === "bakery") initBakery();
-    if (id === "materialists") {
-        setTimeout(() => {
-            const cinemaStart = document.getElementById('cinema-start');
-            const popcornGame = document.getElementById('popcorn-game');
-            const outcomeScreen = document.getElementById('cinema-outcome');
-            
-            if (cinemaStart) cinemaStart.classList.remove('hidden');
-            if (popcornGame) popcornGame.classList.add('hidden');
-            if (outcomeScreen) outcomeScreen.classList.add('hidden');
-            
-            resetPopcornGame();
-            initPopcornGame();
-        }, 100);
-    }
-    if (id === "zoo") {
-        setTimeout(() => {
-            const zooStart = document.getElementById('zoo-start');
-            const trailGame = document.getElementById('trail-game');
-            const zooOutcome = document.getElementById('zoo-outcome');
-            
-            if (zooStart) zooStart.classList.remove('hidden');
-            if (trailGame) trailGame.classList.add('hidden');
-            if (zooOutcome) zooOutcome.classList.add('hidden');
-            
-            initTrailGame();
-        }, 100);
-    }
 }
