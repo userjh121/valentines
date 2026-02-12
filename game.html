@@ -248,7 +248,6 @@
 </div>
 
 
-
 <!-- CINEMA LEVEL - The Materialists -->
 <div id="materialists" class="screen hidden">
   
@@ -257,6 +256,13 @@
   <div class="film-plot">
     <p>Plot: Lucy Mason is a cynical matchmaker who tells her clients to lower their standards while secretly hoping someone will clear hers. She meets a financier with surgically enhanced calves and an ex-boyfriend who can't afford a real ring. She makes the wrong choice. Then the right one.</p>
     <p class="plot-punchline">Anyway, we said "I love you" here and you also don't even need surgically enhanced calves so big W</p>
+  </div>
+  
+  <!-- Start Screen -->
+  <div id="cinema-start" class="cinema-start">
+    <div class="start-controls">
+      <button onclick="startPopcornGameIntro()" class="romance-btn">🎭 Relive the Moment</button>
+    </div>
   </div>
   
   <!-- Popcorn Game -->
@@ -291,31 +297,60 @@
   <!-- Outcome Screen -->
   <div id="cinema-outcome" class="hidden">
     <div class="outcome-cinema">
-      <h2>🍿 CREDITS ROLL 🍿</h2>
+      <div class="credits-roll">
+        <span class="reel-icon">🎬</span>
+        <h2>🍿 CREDITS ROLL 🍿</h2>
+        <span class="reel-icon">🎬</span>
+      </div>
+      
       <div class="outcome-film-stats">
         <p id="popcorn-outcome" class="outcome-review"></p>
-        <div class="outcome-ratings">
-          <div class="rating-item">
-            <span class="rating-label">🍅 CRITIC SCORE</span>
-            <span class="rating-value" id="final-perfect-grabs">0</span>
-            <span class="rating-unit">/5 perfect grabs</span>
+        
+        <div class="critic-score-card">
+          <div class="critic-header">
+            <span class="tomato">🍅</span>
+            <span class="critic-label">CRITIC SCORE</span>
+            <span class="tomato">🍅</span>
+          </div>
+          
+          <div class="score-display">
+            <span class="score-value" id="final-perfect-grabs">0</span>
+            <span class="score-max">/5</span>
+            <span class="score-tagline">perfect grabs</span>
+          </div>
+          
+          <div class="rating-stars">
+            <span class="star" id="star1">☆</span>
+            <span class="star" id="star2">☆</span>
+            <span class="star" id="star3">☆</span>
+            <span class="star" id="star4">☆</span>
+            <span class="star" id="star5">☆</span>
           </div>
         </div>
       </div>
-      <div class="outcome-controls">
-        <button onclick="goTo('zoo')" class="continue-btn">▶ Continue to Zoo Lights</button>
-        <button onclick="restartPopcornGameFromOutcome()" class="restart-btn">🔄 Director's Cut</button>
+      
+      <div class="outcome-buttons">
+        <button onclick="goTo('zoo')" class="cinema-continue-btn">
+          <span class="btn-content">
+            <span class="btn-icon">▶</span>
+            <span class="btn-text">Continue to Zoo Lights</span>
+          </span>
+        </button>
+        
+        <button onclick="restartPopcornGameFromOutcome()" class="cinema-restart-btn">
+          <span class="btn-content">
+            <span class="btn-icon">🔄</span>
+            <span class="btn-text">Director's Cut</span>
+          </span>
+        </button>
+      </div>
+      
+      <div class="film-strip">
+        <span>⏺</span><span>⏺</span><span>⏺</span><span>⏺</span><span>⏺</span>
       </div>
     </div>
   </div>
-
-  <!-- Start Screen -->
-  <div id="cinema-start" class="cinema-start">
-
-    <div class="start-controls">
-      <button onclick="startPopcornGameIntro()" class="romance-btn">🎭 Relive the Moment</button>
-    </div>
-  </div>
+  
 </div>
 
 
@@ -324,58 +359,85 @@
 
 
 
-
-
-
-
-<!-- ZOO LEVEL - SIMPLIFIED LIGHT TRAIL -->
+<!-- ZOO LEVEL - DUBLIN ZOO WINTER LIGHTS -->
 <div id="zoo" class="screen hidden">
-  <h1>The Winter Lights of Dublin Zoo</h1>
-  <p>Trace the light patterns in the frosty air. Create beauty together.</p>
+  
+  <div class="zoo-header">
+    <h1 class="zoo-title">WINTER WILD LIGHTS</h1>
+    <span class="zoo-year">❄️❄️❄️❄️</span>
+  </div>
+  
+  <div class="zoo-memory-card">
+    <div class="memory-chip">📸 DECEMBER </div>
+    <p class="zoo-memory-text">
+      Giant glowing orcas, a tunnel of stars, spiders
+      and that one weird jellyfish thing.
+      We had cold hands, warm Bailey's and extra warm Mad Egg chippiesss
+    </p>
+    <div class="memory-tags">
+      <span class="tag">❄️ 2°C</span>
+      <span class="tag">☕ baileys</span>
+      <span class="tag">🐧 0 penguins</span>
+    </div>
+  </div>
   
   <!-- Light Trail Game -->
   <div id="trail-game" class="hidden">
     <div class="game-container">
-      <!-- Pattern Selection -->
-      <div class="pattern-selection">
-        <h3>Choose a Light Pattern:</h3>
-        <div class="pattern-options">
-          <button class="pattern-btn" data-pattern="star" onclick="selectPattern('star')">
-            <span class="pattern-icon">⭐</span>
-            <span class="pattern-label">Star</span>
-          </button>
-          <button class="pattern-btn" data-pattern="heart" onclick="selectPattern('heart')">
-            <span class="pattern-icon">❤️</span>
-            <span class="pattern-label">Heart</span>
-          </button>
-        </div>
+      
+      <div class="pattern-header">
+        <span class="pattern-glow">✨</span>
+        <h3>choose your light</h3>
+        <span class="pattern-glow">✨</span>
       </div>
       
-      <!-- Drawing Area -->
+      <div class="pattern-options">
+        <button class="pattern-btn" data-pattern="star" onclick="selectPattern('star')">
+          <span class="pattern-icon">⭐</span>
+          <span class="pattern-label">STAR</span>
+          <span class="pattern-sub">star</span>
+        </button>
+        <button class="pattern-btn" data-pattern="heart" onclick="selectPattern('heart')">
+          <span class="pattern-icon">❤️</span>
+          <span class="pattern-label">HEART</span>
+          <span class="pattern-sub">heart</span>
+        </button>
+      </div>
+      
       <div class="drawing-container">
         <div class="drawing-instructions">
-          <p id="draw-instructions">Trace the pattern with your finger!</p>
-          <div class="mobile-hint">👆 Draw on the canvas below</div>
+          <p id="draw-instructions">trace the light</p>
+          <div class="mobile-hint">👆 draw with your finger</div>
         </div>
         
         <div class="drawing-area">
           <canvas id="light-canvas" width="400" height="400"></canvas>
+          <div class="canvas-glow"></div>
         </div>
         
-        <!-- Touch Controls -->
         <div class="mobile-controls">
-          <button class="mobile-btn" onclick="undoLastStroke()">↶ Undo</button>
-          <button class="mobile-btn" onclick="clearDrawing()">🗑️ Clear</button>
-          <button class="mobile-btn" onclick="toggleGuide()" id="guide-btn">👁️ Show Guide</button>
+          <button class="mobile-btn" onclick="undoLastStroke()">
+            <span class="btn-icon">↶</span>
+            <span class="btn-label">UNDO</span>
+          </button>
+          <button class="mobile-btn" onclick="clearDrawing()">
+            <span class="btn-icon">⌧</span>
+            <span class="btn-label">CLEAR</span>
+          </button>
+          <button class="mobile-btn" onclick="toggleGuide()" id="guide-btn">
+            <span class="btn-icon">👁️</span>
+            <span class="btn-label">GUIDE</span>
+          </button>
         </div>
       </div>
       
-      <!-- Accuracy Display -->
       <div class="accuracy-display">
-        <div class="accuracy-item">
-          <div class="accuracy-label">Pattern Accuracy:</div>
-          <div class="accuracy-value" id="accuracy-value">0%</div>
+        <div class="accuracy-header">
+          <span class="accuracy-icon">🎯</span>
+          <span class="accuracy-label">PATTERN ACCURACY</span>
+          <span class="accuracy-icon">🎯</span>
         </div>
+        <div class="accuracy-value" id="accuracy-value">0%</div>
         <div class="accuracy-bar-container">
           <div class="accuracy-bar">
             <div class="accuracy-fill" id="accuracy-fill"></div>
@@ -383,52 +445,98 @@
         </div>
       </div>
       
-      <!-- Game Controls -->
       <div class="game-controls">
-        <button onclick="startTrailGame()" id="start-game-btn"> Begin Drawing</button>
-        <button onclick="checkDrawing()" id="check-btn" disabled>✨ Check Pattern</button>
+        <button onclick="startTrailGame()" id="start-game-btn">
+          <span class="btn-icon">✨</span>
+          Begin Trace
+        </button>
+        <button onclick="checkDrawing()" id="check-btn" disabled>
+          <span class="btn-icon">🎯</span>
+          Check Pattern
+        </button>
       </div>
     </div>
   </div>
   
   <!-- Outcome Screen -->
   <div id="zoo-outcome" class="hidden">
-    <div class="outcome-content">
-      <h2>✨ Light Trail Complete ✨</h2>
+    <div class="outcome-content winter-outcome">
       
-      <div class="result-stats">
-        <div class="stat-item">
-          <span class="stat-label">Pattern Accuracy:</span>
-          <span class="stat-value" id="final-accuracy">0%</span>
+      <div class="outcome-header">
+        <span class="outcome-icon">🏮</span>
+        <h2>LIGHTS REMEMBERED</h2>
+        <span class="outcome-icon">🏮</span>
+      </div>
+      
+      <div class="outcome-stats-card">
+        <div class="stat-block">
+          <span class="stat-icon">🎨</span>
+          <div class="stat-info">
+            <span class="stat-label">your accuracy</span>
+            <span class="stat-value-large" id="final-accuracy">0%</span>
+          </div>
         </div>
-        <div class="stat-item highlight">
-          <span class="stat-label">Hot Chocolate Bonus:</span>
-          <span class="stat-value" id="chocolate-bonus">+0 HP</span>
+        
+        <div class="stat-divider"></div>
+        
+        <div class="stat-block highlight">
+          <span class="stat-icon">☕</span>
+          <div class="stat-info">
+            <span class="stat-label">baileys bonus</span>
+            <span class="stat-value-large" id="chocolate-bonus">+0 HP</span>
+          </div>
         </div>
       </div>
       
-      <p id="light-outcome" class="outcome-text">
-        The lights shimmer in appreciation of your drawing...
-      </p>
+      <div class="memory-reveal" id="light-outcome">
+      </div>
       
-      <div class="outcome-controls">
-        <button onclick="goTo('fnaf')" class="continue-btn">Continue to FNAF</button>
-        <button onclick="justGetChocolate()" class="skip-btn">☕ Just Get Hot Chocolate</button>
+      <div class="outcome-actions">
+        <button onclick="goTo('fnaf')" class="primary-btn">
+          <span class="btn-icon">▶</span>
+          Continue Journey
+        </button>
+      </div>
+      
+      <div class="outcome-footnote">
+        the jellyfish light was definitely the best one
       </div>
     </div>
   </div>
   
   <!-- Start Screen -->
   <div id="zoo-start" class="zoo-start">
-    <div class="zoo-description">
-      <p>The air is crisp, the lights dance through the trees like frozen fireflies.</p>
-      <p class="highlight">Trace patterns in the cold air with your companion...</p>
-    </div>
-    
-    <div class="zoo-choices">
-      <button onclick="startZooGame()" class="romance-btn">✨ Trace Light Patterns</button>
-      <button onclick="skipToChocolate()" class="skip-btn">☕ Skip to Hot Chocolate</button>
-      <button onclick="getTooCold()" class="shy-btn">❄️ Get Too Cold (-20 HP)</button>
+    <div class="start-card">
+      
+      <div class="start-header">
+        <span class="header-icon">❄️</span>
+        <span class="header-icon">✨</span>
+        <span class="header-icon">❄️</span>
+      </div>
+      
+      <div class="start-description">
+        <p class="start-location">DUBLIN ZOO · WINTER LIGHTS</p>
+        <p class="start-tagline">
+          Trace the patterns.
+        </p>
+      </div>
+
+      <div class="start-choices">
+        <button onclick="startZooGame()" class="primary-btn large">
+          <span class="btn-icon">✨</span>
+          Enter the lights
+        </button>
+        <div class="choice-row">
+          <button onclick="getTooCold()" class="tertiary-btn">
+            <span class="btn-icon">❄️</span>
+            Get too cold
+          </button>
+        </div>
+      </div>
+      
+      <div class="start-footer">
+        <span>no animals were seen during this date</span>
+      </div>
     </div>
   </div>
 </div>
@@ -436,15 +544,122 @@
 
 
 
-  <!-- FNAF LEVEL -->
-  <div id="fnaf" class="screen hidden">
-    <h1>Five Nights are Freddy Fazbears</h1>
-    <p>Animatronics lurk. Fear rises. Guess the word before fear consumes you</p>
-    <div id="wordle-grid"></div>
-    <input id="wordle-input" maxlength="5" placeholder="5 letter word">
-    <button onclick="submitGuess()">Submit</button>
-    <p id="fear-text" class="highlight"></p>
+
+
+<!-- FNAF LEVEL - Five Nights at Freddy's -->
+<div id="fnaf" class="screen hidden">
+  
+  <!-- Static Overlay (appears during jumpscare) -->
+  <div id="static-overlay" class="hidden"></div>
+  
+  <!-- Jumpscare Container -->
+  <div id="jumpscare-container" class="hidden">
+    <video id="jumpscare-video" preload="auto">
+      <source src="assets/fnaf.mp4" type="video/mp4">
+      <!-- Add fallback text -->
+      Your browser doesn't support the jumpscare video. Be thankful.
+    </video>
   </div>
+  
+  <!-- Security Camera Frame -->
+  <div class="fnaf-container">
+    
+    <!-- VHS Static Effect (subtle) -->
+    <div class="vhs-static"></div>
+    
+    <!-- Camera Glitch Effect (animated) -->
+    <div class="camera-glitch"></div>
+    
+    <!-- Animatronic Warning Light -->
+    <div class="warning-light" id="warning-light"></div>
+    
+    <!-- Fazbear Entertainment Logo -->
+    <div class="fazbear-logo">
+      <span class="fazbear-text">FAZBEAR ENTERTAINMENT</span>
+      <span class="fazbear-sub">SINCE 1983</span>
+    </div>
+    
+    <!-- Security Camera Header -->
+    <div class="camera-header">
+      <div class="camera-id">
+        <span class="camera-icon">📹</span>
+        <span class="camera-label">CAM 02 - EAST HALL</span>
+        <span class="camera-icon">📹</span>
+      </div>
+      <div class="power-indicator">
+        <span class="power-light"></span>
+        <span class="power-text">ON AIR</span>
+      </div>
+    </div>
+    
+    <!-- Main Game Content -->
+    <div class="fnaf-game-content">
+      
+      <!-- Animatronic Silhouette (ambient) -->
+      <div class="animatronic-silhouette"></div>
+      
+      <!-- Title with Glitch Effect -->
+      <h1 class="fnaf-title">
+        <span class="glitch-text" data-text="FIVE NIGHTS">FIVE NIGHTS</span>
+        <span class="glitch-text" data-text="AT FREDDY'S">AT FREDDY'S</span>
+      </h1>
+      
+      <!-- Fear Meter -->
+      <div class="fear-meter">
+        <div class="fear-label">
+          <span class="fear-icon">⚡</span>
+          <span>SYSTEM STATUS</span>
+          <span class="fear-icon">⚡</span>
+        </div>
+        <div class="fear-bar-container">
+          <div class="fear-bar" id="fear-bar"></div>
+        </div>
+        <div class="fear-attempts" id="fnaf-fear-text">Fear rising… Attempts left: 5</div>
+      </div>
+      
+      <!-- Wordle Grid - Security Monitor Style -->
+      <div class="security-monitor">
+        <div class="monitor-header">
+          <span>🟢 SIGNAL ACQUIRED</span>
+          <span class="static-bars">▌▌▌▌▌▌▌▌</span>
+        </div>
+        <div id="wordle-grid" class="fnaf-wordle-grid"></div>
+      </div>
+      
+      <!-- Input Panel - Vintage Terminal -->
+      <div class="input-panel">
+        <div class="terminal-line">
+          <span class="prompt">></span>
+          <span class="terminal-label">ENTER_ACCESS_CODE:</span>
+        </div>
+        
+        <div class="input-container">
+          <input id="wordle-input" maxlength="5" placeholder="5 LETTERS" autocomplete="off">
+          <button onclick="submitGuess()" id="submit-guess-btn">
+            <span class="btn-icon">🔒</span>
+            <span class="btn-text">VERIFY</span>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Static Noise Line (ambient) -->
+      <div class="static-line"></div>
+      
+    </div><!-- end fnaf-game-content -->
+    
+    <!-- Security Camera Footer -->
+    <div class="camera-footer">
+      <div class="battery-level">
+        <span>🔋 POWER: 97%</span>
+        <span class="battery-bars">||||||||||</span>
+      </div>
+      <div class="time-display">
+        <span>⏰ 12:34 AM</span>
+      </div>
+    </div>
+    
+  </div><!-- end fnaf-container -->
+</div>
 
 
   <!-- YOU DIED -->
