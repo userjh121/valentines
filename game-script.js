@@ -155,7 +155,18 @@ function goTo(id) {
   updateDialogue(id);
   
   // Initialize specific games based on screen
-  if (id === "fnaf") startFnafGame();
+  if (id === "fnaf") {
+  startFnafGame();
+  // Reset jumpscare state
+  jumpscareTriggered = false;
+  const jumpscare = document.getElementById('jumpscare-container');
+  const staticOverlay = document.getElementById('static-overlay');
+  if (jumpscare) jumpscare.classList.add('hidden');
+  if (staticOverlay) staticOverlay.classList.add('hidden');
+  document.body.classList.remove('jumpscare-active');
+}
+
+
   if (id === "bakery") initBakery();
   
   if (id === "materialists") {
@@ -284,23 +295,33 @@ function win() {
 
 
 
-
-
-
-
-/* ---------- FNAF Wordle Game Functions ---------- */
-const fnafWords = ["BLACK", "SCARE", "NIGHT", "WATCH"];
+/* ---------- FNAF Wordle Game Functions - UPDATED WITH JUMPSCARE ---------- */
+const fnafWords = ["BLACK", "SCARE", "NIGHT", "WATCH", "AFTON", "CHICA", "FOXY", "GOLDY", "PIZZA", "PARTY"];
 let targetWord;
 let attempts;
 let maxAttempts;
+let jumpscareTriggered = false; // Prevent multiple jumpscares
 
 function startFnafGame() {
   targetWord = fnafWords[Math.floor(Math.random() * fnafWords.length)];
   attempts = 0;
   maxAttempts = companion === "Mona" ? 7 : 5;
+  jumpscareTriggered = false;
 
   document.getElementById("wordle-grid").innerHTML = "";
-  document.getElementById("fear-text").innerText = `Fear rising… Attempts left: ${maxAttempts}`;
+  
+  // Update fear meter
+  updateFearMeter();
+  
+  // Hide jumpscare if visible
+  const jumpscare = document.getElementById('jumpscare-container');
+  const staticOverlay = document.getElementById('static-overlay');
+  if (jumpscare) jumpscare.classList.add('hidden');
+  if (staticOverlay) staticOverlay.classList.add('hidden');
+  
+  // Remove any warning lights
+  const warningLight = document.getElementById('warning-light');
+  if (warningLight) warningLight.classList.remove('active');
 }
 
 function submitGuess() {
@@ -313,25 +334,44 @@ function submitGuess() {
   renderGuess(guess);
   input.value = "";
 
+  // Update fear meter
+  updateFearMeter();
+
+  // Check for win
   if (guess === targetWord) {
     heal(20);
     goTo("victory");
     return;
   }
 
+  // Check for death (too many attempts)
   if (attempts >= maxAttempts) {
     die();
     return;
   }
 
+  // TRIGGER JUMPSCARE ON 4TH WRONG GUESS (for maxAttempts=5) or 6th (for maxAttempts=7)
+  const jumpScareThreshold = maxAttempts === 7 ? 6 : 4;
+  
+  if (attempts === jumpScareThreshold && !jumpscareTriggered) {
+    triggerJumpscare();
+  }
+
+  // Regular damage for wrong guess
   damage(10);
-  document.getElementById("fear-text").innerText = 
-    `Fear rising… Attempts left: ${maxAttempts - attempts}`;
+  document.getElementById("fnaf-fear-text").innerText = 
+    `⚠️ SYSTEM COMPROMISED … Attempts left: ${maxAttempts - attempts} ⚠️`;
 }
 
 function renderGuess(guess) {
   const grid = document.getElementById("wordle-grid");
+  // Add FNAF-specific class to grid
+  grid.classList.add('fnaf-wordle-grid');
 
+  // Create a row container
+  const row = document.createElement('div');
+  row.style.display = 'contents'; // Keeps grid layout
+  
   for (let i = 0; i < 5; i++) {
     const cell = document.createElement("div");
     cell.className = "word-cell";
@@ -348,6 +388,99 @@ function renderGuess(guess) {
     grid.appendChild(cell);
   }
 }
+
+// New function to update the fear meter
+function updateFearMeter() {
+  const fearBar = document.getElementById('fear-bar');
+  const fearText = document.getElementById('fnaf-fear-text');
+  const warningLight = document.getElementById('warning-light');
+  
+  if (!fearBar) return;
+  
+  // Calculate fear percentage (0% = full health/calm, 100% = max fear)
+  const attemptsLeft = maxAttempts - attempts;
+  const fearPercentage = 100 - ((attemptsLeft / maxAttempts) * 100);
+  
+  fearBar.style.width = `${fearPercentage}%`;
+  
+  // Update color based on fear level
+  if (fearPercentage >= 80) {
+    fearBar.className = 'fear-bar critical';
+    if (warningLight) warningLight.classList.add('active');
+  } else if (fearPercentage >= 50) {
+    fearBar.className = 'fear-bar low';
+    if (warningLight) warningLight.classList.remove('active');
+  } else {
+    fearBar.className = 'fear-bar';
+    if (warningLight) warningLight.classList.remove('active');
+  }
+  
+  // Update text
+  if (fearText) {
+    fearText.innerText = `⚠️ SYSTEM STATUS: ${Math.round(fearPercentage)}% | ATTEMPTS: ${attemptsLeft} ⚠️`;
+  }
+}
+
+// JUMPSCARE FUNCTION - Triggers on 4th wrong guess
+function triggerJumpscare() {
+  if (jumpscareTriggered) return;
+  jumpscareTriggered = true;
+  
+  console.log("⚠️ JUMPSCARE TRIGGERED! ⚠️");
+  
+  const jumpscare = document.getElementById('jumpscare-container');
+  const staticOverlay = document.getElementById('static-overlay');
+  const video = document.getElementById('jumpscare-video');
+  const hud = document.getElementById('hud');
+  
+  // Show jumpscare elements
+  if (jumpscare) jumpscare.classList.remove('hidden');
+  if (staticOverlay) staticOverlay.classList.remove('hidden');
+  
+  // Add class to body for HUD hiding
+  document.body.classList.add('jumpscare-active');
+  
+  // Play video
+  if (video) {
+    video.currentTime = 0;
+    video.play().catch(e => console.log("Video play failed:", e));
+  }
+  
+  // Flash warning light rapidly
+  const warningLight = document.getElementById('warning-light');
+  if (warningLight) {
+    warningLight.classList.add('active');
+    warningLight.style.animation = 'warning-pulse 0.1s infinite';
+  }
+  
+  // Additional damage - fear!
+  damage(15);
+  
+  // Hide jumpscare after 1.5 seconds
+  setTimeout(() => {
+    if (jumpscare) jumpscare.classList.add('hidden');
+    if (staticOverlay) staticOverlay.classList.add('hidden');
+    document.body.classList.remove('jumpscare-active');
+    
+    if (warningLight) {
+      warningLight.style.animation = '';
+      warningLight.classList.remove('active');
+    }
+  }, 1500);
+}
+
+// Override the existing die() function to include jumpscare context
+function die() {
+  // If player dies from the jumpscare, show death screen
+  goTo("death-screen");
+  if (deathAudio) deathAudio.play();
+}
+
+
+
+
+
+
 
 
 
@@ -1023,6 +1156,21 @@ function handleRoundEnd(success, isPerfect = false) {
     setTimeout(startNextRound, 1500);
 }
 
+function updateRatingStars(perfectGrabs) {
+  for (let i = 1; i <= 5; i++) {
+    const star = document.getElementById(`star${i}`);
+    if (star) {
+      if (i <= perfectGrabs) {
+        star.textContent = '★';
+        star.classList.add('filled');
+      } else {
+        star.textContent = '☆';
+        star.classList.remove('filled');
+      }
+    }
+  }
+}
+
 // Update stats display
 function updateStatsDisplay() {
     if (roundCounter) {
@@ -1063,6 +1211,7 @@ function endGame() {
 function showPopcornOutcome(hpBonus, outcomeText) {
     const popcornGame = document.getElementById('popcorn-game');
     const outcomeScreen = document.getElementById('cinema-outcome');
+    const cinemaStart = document.getElementById('cinema-start');
     const popcornOutcome = document.getElementById('popcorn-outcome');
     const sharedBonus = document.getElementById('shared-bonus');
     const finalPerfectGrabs = document.getElementById('final-perfect-grabs');
@@ -1070,15 +1219,30 @@ function showPopcornOutcome(hpBonus, outcomeText) {
     if (!popcornGame || !outcomeScreen) return;
     
     popcornGame.classList.add('hidden');
-    outcomeScreen.classList.remove('hidden');
+     if (cinemaStart) cinemaStart.classList.add('hidden');
+      outcomeScreen.classList.remove('hidden');
     
     // Update outcome display
     if (popcornOutcome) popcornOutcome.textContent = outcomeText;
     if (sharedBonus) sharedBonus.textContent = `+${hpBonus}`;
     if (finalPerfectGrabs) finalPerfectGrabs.textContent = perfectGrabs;
-    
+
+    updateRatingStars(perfectGrabs);
     // Award HP
     heal(hpBonus);
+}
+
+
+function restartPopcornGameFromOutcome() {
+  const outcomeScreen = document.getElementById('cinema-outcome');
+  const popcornGame = document.getElementById('popcorn-game');
+  const cinemaStart = document.getElementById('cinema-start');
+  
+  if (outcomeScreen) outcomeScreen.classList.add('hidden');
+  if (popcornGame) popcornGame.classList.remove('hidden');
+  if (cinemaStart) cinemaStart.classList.add('hidden');
+  
+  restartPopcornGame();
 }
 
 // Restart game
@@ -1792,33 +1956,9 @@ function resetDrawing() {
     }
 }
 
-// Skip to chocolate
-function skipToChocolate() {
-    const startScreen = document.getElementById('zoo-start');
-    const outcomeScreen = document.getElementById('zoo-outcome');
-    
-    if (startScreen) startScreen.classList.add('hidden');
-    if (outcomeScreen) outcomeScreen.classList.remove('hidden');
-    
-    // Give minimal bonus
-    heal(15);
-    
-    // Update outcome for skip
-    document.getElementById('final-accuracy').textContent = "Skipped";
-    document.getElementById('chocolate-bonus').textContent = "+15 HP";
-    
-    document.getElementById('light-outcome').textContent = 
-        "Sometimes the warmest moments don't need perfect patterns. The simple act of being together, hot chocolates in hand, says everything.";
-}
 
-// Just get chocolate
-function justGetChocolate() {
-    heal(30);
-    goTo('fnaf');
-}
 
 // Get too cold
 function getTooCold() {
-    damage(20);
-    goTo('fnaf');
+    damage(100);
 }
