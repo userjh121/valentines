@@ -275,12 +275,21 @@ function showHealEffect() {
 function die() {
   goTo("death-screen");
   if (deathAudio) deathAudio.play();
+  
+  // Add slight screen shake effect
+  document.body.classList.add('death-shake');
+  setTimeout(() => {
+    document.body.classList.remove('death-shake');
+  }, 500);
 }
 
 function revive() {
   hp = 50;
   updateHP();
   goTo(lastScreen);
+  
+  // Play a gentle grace sound if you have one
+  // You can add a sound effect here
 }
 
 function restart() {
@@ -296,7 +305,7 @@ function win() {
 
 
 /* ---------- FNAF Wordle Game Functions - UPDATED WITH JUMPSCARE ---------- */
-const fnafWords = ["BLACK", "SCARE", "NIGHT", "WATCH", "AFTON", "CHICA", "FOXY", "GOLDY", "PIZZA", "PARTY"];
+const fnafWords = ["BLACK", "SCARE", "NIGHT", "WATCH", "AFTON", "CHICA","GOLDY", "PIZZA", "PARTY"];
 let targetWord;
 let attempts;
 let maxAttempts;
