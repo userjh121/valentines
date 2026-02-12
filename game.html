@@ -662,14 +662,78 @@
 </div>
 
 
-  <!-- YOU DIED -->
-  <div id="death-screen" class="screen hidden">
-    <img src="assets/died.png">
-    <br>
-    <img src="assets/powerup.png" class="character" onclick="revive()" title="Touch grace to revive">
-    <p>Touch the grace to rise again.</p>
-    <button onclick="restart()">Return to Beginning</button>
+
+
+
+
+<!-- YOU DIED - ELDEN RING STYLE WITH YOUR ASSETS -->
+<div id="death-screen" class="screen hidden">
+  
+  <!-- Dark Fog Effect -->
+  <div class="death-fog"></div>
+  
+  <!-- Particles (embers) -->
+  <div class="death-particles"></div>
+  
+  <!-- Main Death Container -->
+  <div class="elden-ring-death">
+    
+    <!-- "YOU DIED" Banner with your died.png -->
+    <div class="death-banner-container">
+      <div class="death-banner-glow"></div>
+      <img src="assets/died.png" alt="YOU DIED" class="death-banner-image">
+    </div>
+    
+    <!-- Rune/Arcane Circle Decoration -->
+    <div class="death-circle-decoration">
+      <div class="circle-outer"></div>
+      <div class="circle-inner"></div>
+      <div class="circle-runebox">
+        <span class="rune-symbol">ᛉ</span>
+      </div>
+    </div>
+    
+    <!-- Grace Container with powerup.png -->
+    <div class="grace-container">
+      <!-- Site of Grace - Using powerup.png as the grace -->
+      <div class="site-of-grace" onclick="revive()">
+        <img src="assets/powerup.png" alt="Site of Grace" class="grace-image">
+        <div class="grace-glow"></div>
+        <div class="grace-light-ring"></div>
+        <div class="grace-ember"></div>
+        <div class="grace-ember-2"></div>
+        <div class="grace-ember-3"></div>
+      </div>
+      
+      <!-- Grace Text -->
+      <div class="grace-text">
+        <span class="grace-instruction">Touch grace</span>
+        <span class="grace-subtext">to rise again</span>
+      </div>
+    </div>
+    
+    <!-- Bottom Menu -->
+    <div class="death-menu">
+      <button onclick="restart()" class="elden-ring-btn">
+        <span class="btn-decoration">[</span>
+        <span class="btn-text">Return to Beginning</span>
+        <span class="btn-decoration">]</span>
+      </button>
+    </div>
+    
+    <!-- Elden Ring Quote -->
+    <div class="death-quote">
+      <span class="quote-mark">“</span>
+      <span class="quote-text">Rise, ye Tarnished</span>
+      <span class="quote-mark">”</span>
+    </div>
+    
   </div>
+</div>
+
+
+
+
 
   <!-- VICTORY -->
   <div id="victory" class="screen hidden">
