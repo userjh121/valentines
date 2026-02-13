@@ -137,7 +137,7 @@
             <source src="assets/noisette.mp4" type="video/mp4">
             Your browser doesn't support video, but trust me - it's cute.
           </video>
-          <p class="video-caption">paragliders doing their thing. we were here.</p>
+          <p class="video-caption">paragliders doing their thing</p>
           <button class="close-secret" onclick="closeBakerySecret(event); event.stopPropagation();">close chest</button>
         </div>
       </div>
@@ -235,7 +235,7 @@
     </div>
     
     <button onclick="completeBakery()" class="bakery-continue-btn">
-      <span class="btn-text">continue to the the cinema</span>
+      <span class="btn-text">Continue to the Cinema</span>
       <span class="btn-arrow">→</span>
     </button>
     
@@ -256,6 +256,8 @@
   <div class="film-plot">
     <p>Plot: Lucy Mason is a cynical matchmaker who tells her clients to lower their standards while secretly hoping someone will clear hers. She meets a financier with surgically enhanced calves and an ex-boyfriend who can't afford a real ring. She makes the wrong choice. Then the right one.</p>
     <p class="plot-punchline">Anyway, we said "I love you" here and you also don't even need surgically enhanced calves so big W</p>
+    <p class="plot-punchline"><b>Grab the popcorn on time🍿</b></p>
+  
   </div>
   
   <!-- Start Screen -->
@@ -359,7 +361,7 @@
 
 
 
-<!-- ZOO LEVEL - DUBLIN ZOO WINTER LIGHTS -->
+<!-- DUBLIN ZOO WINTER LIGHTS -->
 <div id="zoo" class="screen hidden">
   
   <div class="zoo-header">
@@ -645,7 +647,7 @@
       <!-- Static Noise Line (ambient) -->
       <div class="static-line"></div>
       
-    </div><!-- end fnaf-game-content -->
+    </div>
     
     <!-- Security Camera Footer -->
     <div class="camera-footer">
@@ -658,7 +660,7 @@
       </div>
     </div>
     
-  </div><!-- end fnaf-container -->
+  </div>
 </div>
 
 
@@ -666,7 +668,7 @@
 
 
 
-<!-- YOU DIED - ELDEN RING STYLE WITH YOUR ASSETS -->
+<!-- YOU DIED PAGE -->
 <div id="death-screen" class="screen hidden">
   
   <!-- Dark Fog Effect -->
@@ -735,13 +737,116 @@
 
 
 
-  <!-- VICTORY -->
-  <div id="victory" class="screen hidden">
-    <h1>Journey Complete</h1>
-    <p>Through every trial, every night, every shared moment… you made it.</p>
-    <h2>You reached me ❤️</h2>
-    <p class="highlight">Happy Valentine's Day.</p>
+
+
+<!-- VICTORY PAGE -->
+<div id="victory" class="screen hidden">
+  
+  <!-- Floating Hearts Background -->
+  <div class="floating-hearts">
+    <span>❤️</span><span>🧡</span><span>💛</span><span>💚</span><span>💙</span><span>💜</span><span>🩷</span><span>🤍</span>
   </div>
+  
+  <!-- Soft Gradient Overlay -->
+  <div class="victory-glow"></div>
+  
+  <!-- Main Victory Container -->
+  <div class="cute-victory-container">
+    
+    <!-- Main Title -->
+    <div class="victory-title">
+      <span class="title-heart">❤️</span>
+      <h1>Journey Complete</h1>
+    </div>
+    
+  <!-- Message Card -->
+  <div class="message-card">
+    <div class="message-ribbon"></div>
+    <div class="message-content">
+      <div class="heart-divider">✧ ༝ ˚ ✦ ༝ ✧</div>
+      <h2 class="victory-reveal">You reached me!</h2>
+      
+      <!-- Add your photo here - larger, no heart -->
+      <div class="couple-photo-container">
+        <img src="assets/us-v2.png" alt="Us" class="couple-photo">
+        <div class="photo-glow"></div>
+      </div>
+      
+      <div class="signature-line">
+        <span class="signature-emoji">🥂</span>
+        <span class="signature-text">Happy Valentine's Day</span>
+        <span class="signature-emoji">🥂</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cute GIFs Row -->
+    <div class="cute-gifs-row">
+      <div class="gif-container">
+        <img src="assets/catlove.gif" alt="cute love" class="cute-gif">
+        <div class="gif-sparkle"></div>
+        <span class="gif-label">cat love</span>
+      </div>
+      <div class="gif-container">
+        <img src="assets/couple-kiss.gif" alt="romantic kiss" class="cute-gif">
+        <div class="gif-sparkle"></div>
+        <span class="gif-label">kiss</span>
+      </div>
+      <div class="gif-container">
+        <img src="assets/bigeyes.png" alt="big eyes" class="cute-gif">
+        <div class="gif-sparkle"></div>
+        <span class="gif-label">big eyes</span>
+      </div>
+      <div class="gif-container">
+        <img src="assets/feast-eat.gif" alt="celebration feast" class="cute-gif">
+        <div class="gif-sparkle"></div>
+        <span class="gif-label">feast time</span>
+      </div>
+      <div class="gif-container">
+        <img src="assets/couple-tego.png" alt="us" class="cute-gif">
+        <div class="gif-sparkle"></div>
+        <span class="gif-label">us</span>
+      </div>
+      <div class="gif-container">
+        <img src="assets/sleeping.gif" alt="cozy sleep" class="cute-gif">
+        <div class="gif-sparkle"></div>
+        <span class="gif-label">sweet dreams</span>
+      </div>
+    </div>
+      
+    <!-- Memory Lane -->
+    <div class="memory-lane">
+      <span class="memory-dot">🏢</span>
+      <span class="memory-dot">🥐</span>
+      <span class="memory-dot">🍿</span>
+      <span class="memory-dot">❄️</span>
+      <span class="memory-dot">🔦</span>
+      <span class="memory-dot">❤️</span>
+      <div class="memory-line"></div>
+    </div>
+    
+    <!-- Footer -->
+    <div class="victory-footer">
+      <span class="footer-emoji">✨</span>
+      <span class="footer-text">made with lots of loveeeee on 12/2/2026</span>
+      <span class="footer-emoji">✨</span>
+    </div>
+
+    <button onclick="restart()" class="back-to-start-btn">
+      <span class="btn-icon">🏠</span>
+      <span class="btn-text">Back to Start</span>
+      <span class="btn-icon">✨</span>
+    </button>
+    
+  </div>
+  
+  <!-- Confetti Canvas (kept for automatic celebration) -->
+  <canvas id="victory-confetti-canvas" class="confetti-canvas hidden"></canvas>
+  
+  <!-- Toast Notification (kept for potential use) -->
+  <div id="victory-toast" class="victory-toast hidden"></div>
+  
+</div>
 
   <audio id="death-audio" src="assets/you-died.mp3"></audio>
   <audio id="bg-music" src="assets/start-song.mp3" loop></audio>
