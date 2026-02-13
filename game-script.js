@@ -13,7 +13,7 @@ const dialogues = {
   },
   Mona: {
     sogeti: "Mona stands firm, carefully examining each chest.",
-    zoo: "Mona growls softly, guarding your Baileys."
+    zoo: "Mona growls, guarding your Baileys."
   }
 };
 
@@ -287,9 +287,6 @@ function revive() {
   hp = 50;
   updateHP();
   goTo(lastScreen);
-  
-  // Play a gentle grace sound if you have one
-  // You can add a sound effect here
 }
 
 function restart() {
@@ -304,12 +301,12 @@ function win() {
 
 
 
-/* ---------- FNAF Wordle Game Functions - UPDATED WITH JUMPSCARE ---------- */
-const fnafWords = ["BLACK", "SCARE", "NIGHT", "WATCH", "AFTON", "CHICA","GOLDY", "PIZZA", "PARTY"];
+/* ---------- FNAF Wordle Game Functions  ---------- */
+const fnafWords = ["BLACK", "SCARE", "NIGHT", "WATCH", "AFTON", "CHICA", "PIZZA", "PARTY"];
 let targetWord;
 let attempts;
 let maxAttempts;
-let jumpscareTriggered = false; // Prevent multiple jumpscares
+let jumpscareTriggered = false; 
 
 function startFnafGame() {
   targetWord = fnafWords[Math.floor(Math.random() * fnafWords.length)];
@@ -623,7 +620,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 /* ---------- Bakery Memory Game ---------- */
-// Memory Game Variables
 let memoryGame = {
   cards: ['🥐', '🥨', '🥖', '🍩', '🎂', '🍪', '🧁', '🥧'],
   flippedCards: [],
@@ -636,7 +632,7 @@ let memoryGame = {
   gameCompleted: false,
   hintsRemaining: 3,
   difficulty: 'easy',
-  initialTime: 90 // Will be set based on difficulty
+  initialTime: 90
 };
 
 // Initialize bakery
@@ -762,7 +758,7 @@ function checkForMatch() {
       card2.classList.remove('flipped');
       memoryGame.flippedCards = [];
       showMessage('Wrong match! -5 HP', 'error');
-      damage(5); // Minus 5 health for wrong match
+      damage(10); 
     }, 1000);
   }
 }
@@ -856,8 +852,6 @@ function hint() {
   showMessage(`Hint used! ${memoryGame.hintsRemaining} hints remaining.`, 'info');
 }
 
-// Complete game successfully - UPDATED VERSION
-// Complete game successfully - UPDATED WITH PRETTIER OUTCOME
 function completeMemoryGame() {
   clearInterval(memoryGame.timerInterval);
   memoryGame.gameCompleted = true;
@@ -1013,10 +1007,8 @@ function updateBakeryDialogue() {
 
 
 // ============================================
-// SIMPLIFIED POPCORN GAME
+// POPCORN GAME
 // ============================================
-
-// Game Variables
 let popcornGameActive = false;
 let currentRound = 0;
 let perfectGrabs = 0;
@@ -1072,12 +1064,6 @@ function startPopcornGame() {
 function startNextRound() {
     if (!popcornGameActive) return;
     
-    // ❌ REMOVE THIS LINE
-    // greenLightTime = Date.now();
-    
-    // Remove this duplicate line too:
-    // signalLight.className = 'signal-light green';
-    
     currentRound++;
     
     if (currentRound > 5) {
@@ -1103,7 +1089,7 @@ function startNextRound() {
     setTimeout(() => {
         if (!popcornGameActive) return;
         
-        greenLightTime = Date.now(); // ✅ SET IT HERE!
+        greenLightTime = Date.now();
         
         signalLight.className = 'signal-light green';
         signalText.textContent = "GRAB NOW!";
@@ -1331,21 +1317,9 @@ function restartPopcornGameFromOutcome() {
 
 
 
-
-
-
-
-
-
-
-
-
-
 // ============================================
-// FIXED LIGHT TRAIL GAME
+// LIGHT TRAIL GAME
 // ============================================
-
-// Game Variables
 let trailGameActive = false;
 let canvas, ctx;
 let isDrawing = false;
@@ -1446,7 +1420,7 @@ function getCanvasCoordinates(e) {
     }
 }
 
-// Set up drawing event listeners - FIXED
+// Set up drawing event listeners 
 function setupDrawingEvents() {
     if (!canvas) return;
     
@@ -1464,7 +1438,7 @@ function setupDrawingEvents() {
     canvas.addEventListener('mouseup', stopDrawing);
     canvas.addEventListener('mouseleave', stopDrawing);
     
-    // Touch events - fixed to prevent scrolling
+    // Touch events 
     canvas.addEventListener('touchstart', function(e) {
         e.preventDefault();
         startDrawingTouch(e);
@@ -1481,7 +1455,6 @@ function setupDrawingEvents() {
     }, { passive: false });
 }
 
-// Start Zoo Game
 // Start Zoo Game
 function startZooGame() {
     const startScreen = document.getElementById('zoo-start');
@@ -1513,7 +1486,7 @@ function resetDrawing() {
     if (startBtn) {
         startBtn.disabled = false;
         startBtn.textContent = "Begin Drawing";
-        startBtn.style.display = 'inline-block'; // ✅ Show start button
+        startBtn.style.display = 'inline-block'; 
     }
     
     // ✅ Hide redo button when resetting
@@ -1703,7 +1676,7 @@ function drawGrid() {
     }
 }
 
-// Redraw all user paths - FIXED
+// Redraw all user paths
 function redrawUserPaths() {
     if (!ctx || allPaths.length === 0) return;
     
@@ -1971,3 +1944,4 @@ function resetDrawing() {
 function getTooCold() {
     damage(100);
 }
+
